@@ -1,6 +1,7 @@
 <div align="center">
-  # ⚖️ LegalEase AI
-  ### Next-Gen Legal Analysis for Everyone.
+            <strong>⚖️ LegalEase AI</strong>
+            <strong>Next-Gen Legal Analysis for Everyone</strong>
+            <br>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
   [![Hackathon](https://img.shields.io/badge/Hackathon-CodeQuest%20AI-blue)](https://codequest.ai)
