@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen text-slate-200 selection:bg-primary selection:text-white">
+    <div className="min-h-screen flex flex-col text-slate-200 selection:bg-primary selection:text-white">
       {/* Dynamic Background Mesh */}
       <div className="bg-mesh" />
 
@@ -58,7 +58,7 @@ function App() {
         </div>
       </nav>
 
-      <main className="pt-24 min-h-screen">
+      <main className="pt-24 flex-grow">
         <AnimatePresence mode="wait">
           {!analysisResult ? (
             <motion.div
@@ -84,16 +84,25 @@ function App() {
         </AnimatePresence>
       </main>
 
-      {/* Global Status Footer Decoration */}
+      {/* Global Status Footer */}
       {!analysisResult && (
         <motion.footer 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          className="fixed bottom-10 left-0 right-0 text-center select-none pointer-events-none"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="py-20 z-10 select-none pointer-events-none mt-auto"
         >
-          <div className="flex flex-col items-center gap-3">
-             <p className="text-[9px] font-black uppercase tracking-[0.6em]">Proprietary AI Engine • Active Learning v2.4.1</p>
-             <div className="w-40 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="flex flex-col items-center gap-4">
+             <div className="flex items-center gap-3 px-6 py-2 rounded-full glass border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Built For</span>
+                <div className="w-px h-3 bg-white/10" />
+                <div className="flex items-center gap-2">
+                   <span className="text-sm">🏆</span>
+                   <span className="text-[11px] font-black text-white uppercase tracking-[0.2em] text-glow">
+                     CodeQuest AI — Final Round Hackathon
+                   </span>
+                </div>
+             </div>
+             <div className="w-60 h-[1px] bg-gradient-to-r from-transparent via-primary-light/50 to-transparent" />
           </div>
         </motion.footer>
       )}
