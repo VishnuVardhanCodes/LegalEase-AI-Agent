@@ -1,15 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale, Sparkles, ChevronRight } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale, Sparkles, ChevronRight, ChevronDown, Check } from 'lucide-react';
 import axios from 'axios';
 import AgentWorkflow from './AgentWorkflow';
+import HeroBackground from './HeroBackground';
 
 const UploadPage = ({ onAnalysisComplete }) => {
   const [file, setFile] = useState(null);
   const [language, setLanguage] = useState('English');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const languages = ['English', 'Hindi', 'Telugu'];
 
   const onDrop = useCallback((acceptedFiles) => {
     setFile(acceptedFiles[0]);
@@ -50,33 +54,60 @@ const UploadPage = ({ onAnalysisComplete }) => {
 
   return (
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20 pb-40">
-      {/* Decorative Orbs */}
-      <div className="glow-orb top-[-10%] left-[-10%] opacity-20" />
-      <div className="glow-orb bottom-[-10%] right-[-10%] opacity-20" style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)' }} />
-      <div className="bg-grid" />
+      <HeroBackground />
+      <div className="bg-grid opacity-30" />
 
       {/* Hero Header */}
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center z-10 mb-16 space-y-4 px-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1,
+              delayChildren: 0.2
+            }
+          }
+        }}
+        className="text-center z-10 mb-16 space-y-4 px-4 relative"
       >
         <motion.div 
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6"
+          variants={{
+            hidden: { opacity: 0, scale: 0.8 },
+            visible: { opacity: 1, scale: 1 }
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6 bg-white/[0.02]"
         >
-          <Sparkles className="w-4 h-4 text-primary-light" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-light">Next-Gen Legal Analysis</span>
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary-light" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-light">Next-Gen Legal Analysis</span>
+          </div>
+          <div className="w-[1px] h-3 bg-white/10 mx-1" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">AI AGENT POWERED</span>
         </motion.div>
         
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.1]">
-          Legal clarity for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-secondary to-primary-light animate-gradient-x">everyone.</span>
-        </h1>
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-          Upload any legal agreement and get a plain-language summary in <span className="text-white font-medium">10 seconds</span>. 
-          Powered by advanced AI agents.
-        </p>
+        <motion.h1 
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="text-5xl md:text-8xl font-black tracking-tight text-white max-w-5xl mx-auto leading-[0.95] md:leading-[1]"
+        >
+          Legal clarity <br/> for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-secondary to-primary-light animate-gradient-x contrast-125">everyone.</span>
+        </motion.h1>
+        
+        <motion.p 
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="text-lg md:text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed pt-4"
+        >
+          Upload any legal agreement and get a plain-language summary in <span className="text-white font-semibold">10 seconds</span>. 
+          <br className="hidden md:block"/> Powered by advanced AI agents.
+        </motion.p>
       </motion.div>
 
       {/* Agent Workflow Section */}
@@ -141,16 +172,53 @@ const UploadPage = ({ onAnalysisComplete }) => {
                <div className="space-y-3">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Language</span>
                   <div className="relative group">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-light z-10" />
-                    <select 
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-12 py-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer appearance-none"
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-12 py-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer flex items-center justify-between"
                     >
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Telugu">Telugu</option>
-                    </select>
+                      <div className="flex items-center gap-3">
+                        <Globe className="w-4 h-4 text-primary-light" />
+                        <span>{language}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-20" 
+                            onClick={() => setIsDropdownOpen(false)}
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="absolute bottom-[calc(100%+12px)] left-0 right-0 z-30 glass-card rounded-2xl overflow-hidden p-1 shadow-2xl border border-white/10"
+                          >
+                            <div className="bg-[#0c0c12]/95 backdrop-blur-xl rounded-xl">
+                              {languages.map((lang) => (
+                                <button
+                                  key={lang}
+                                  onClick={() => {
+                                    setLanguage(lang);
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className={`
+                                    w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors
+                                    ${language === lang ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}
+                                  `}
+                                >
+                                  {lang}
+                                  {language === lang && <Check className="w-4 h-4 text-primary-light" />}
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
                   </div>
                </div>
 
