@@ -1,9 +1,10 @@
 <div align="center">
-  <img src="./legal-ease/frontend/src/assets/banner.png" width="800" height="auto" alt="LegalEase AI Banner">
-
   # ⚖️ LegalEase AI
   ### Next-Gen Legal Analysis for Everyone.
   
+  [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+  [![Hackathon](https://img.shields.io/badge/Hackathon-CodeQuest%20AI-blue)](https://codequest.ai)
+  [![Agentic](https://img.shields.io/badge/AI-Agentic%20Workflow-emerald)](https://supervity.ai)
 
   **Legal document clarity in < 10 seconds. Powered by Supervity AI Agents.**
 </div>
