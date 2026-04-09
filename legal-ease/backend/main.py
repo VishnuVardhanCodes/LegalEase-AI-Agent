@@ -27,7 +27,7 @@ app.add_middleware(
 
 SUPERVITY_API_URL = "https://auto-workflow-api.supervity.ai/api/v1/workflow-runs/execute/stream"
 SUPERVITY_TOKEN = os.getenv("SUPERVITY_TOKEN", "YOUR_TOKEN_HERE")
-WORKFLOW_ID = "019d70d2-c69d-7000-b873-b052910b56d5"
+WORKFLOW_ID = os.getenv("SUPERVITY_WORKFLOW_ID", "019d70d2-c69d-7000-b873-b052910b56d5")
 
 class FollowUpRequest(BaseModel):
     question: str
