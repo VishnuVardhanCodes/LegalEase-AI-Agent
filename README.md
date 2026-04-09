@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="file:///C:/Users/POLLA%20VISHNU%20VARDHAN/.gemini/antigravity/brain/01a7b784-556e-4e24-9bbb-1a9a82828780/legalease_hero_banner_1775759925275.png" width="800" height="auto" alt="LegalEase AI Banner">
+  <img src="./legal-ease/frontend/src/assets/banner.png" width="800" height="auto" alt="LegalEase AI Banner">
 
   # ⚖️ LegalEase AI
   ### Next-Gen Legal Analysis for Everyone.
@@ -27,7 +27,16 @@ Legal documents are intentionally complex, often hiding risks in dense legalese.
 Our AI Agent doesn't just read; it processes. Following a structured multi-node execution path:
 
 <div align="center">
-  <img src="https://mermaid.ink/svg/pako:eNptkU1OwzAQhK9ieS2S9gJc8AdKSCB6AdEHLXbaRAq14zjNoRRX4AicgGPwEbgCnyu16Z9FshM_z3vzeDyr6kpLRSM-0jN68fGZOn6q8C26E9P9e5_C6mQxK_p68I_60-6Q7jndX-4_P7iTPh9_h-b_i8_h8K7S6XF007O9O8yYf6xR6Rk9e3_PPH5Z66pRRvSOnuInH2-ox0_N37O7W-8N9y-9N-yBPe4-O2Df3C3wCOwJe9Zec_HhU41vUT8w3bW3ZrrnbM10z9mG6WfODsy_Z_Yf9v_b_6f_D-S_Ie9HezPdc87WTPecG5h_7pS9P_QJ9_jP6T_df77-3P-X_R_N_5v9H_XvGf9h_7n-I8Y_7n--fz7--_oLxj_uf75_Pv8B_7H-L_E_77-yY_7E_v_6_y3G_9t4_vv6C9a_9P97-v88_f_m_y_rv7FfX7f_df8t9_9l_0f9H89_tf9X_ffu_2j_v_Y_m_8f9B-Z_y_8T_sfz7-wf2n_ov6V_R_z_y3_C_oP7F-af-X_u_0f8__u_un---L_U_2L_of9L_p_5P7u_m-of576" width="600" alt="Workflow Diagram">
+
+```mermaid
+flowchart TD
+    A[Ingest] --> B[Structural Parse]
+    B --> C[Risk Scanning]
+    C --> D[Simplification]
+    D --> E[Trust Scoring]
+    E --> F[Consultation]
+```
+
 </div>
 
 ### 1️⃣ Ingest
