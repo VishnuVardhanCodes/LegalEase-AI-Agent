@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale, Sparkles, ChevronRight } from 'lucide-react';
 import axios from 'axios';
+import AgentWorkflow from './AgentWorkflow';
 
 const UploadPage = ({ onAnalysisComplete }) => {
   const [file, setFile] = useState(null);
@@ -48,7 +49,7 @@ const UploadPage = ({ onAnalysisComplete }) => {
   };
 
   return (
-    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20">
+    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20 pb-40">
       {/* Decorative Orbs */}
       <div className="glow-orb top-[-10%] left-[-10%] opacity-20" />
       <div className="glow-orb bottom-[-10%] right-[-10%] opacity-20" style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)' }} />
@@ -77,6 +78,11 @@ const UploadPage = ({ onAnalysisComplete }) => {
           Powered by advanced AI agents.
         </p>
       </motion.div>
+
+      {/* Agent Workflow Section */}
+      <div className="relative z-10 w-full mb-12">
+        <AgentWorkflow />
+      </div>
 
       {/* Main Upload Area */}
       <div className="w-full max-w-3xl z-10 px-4">
