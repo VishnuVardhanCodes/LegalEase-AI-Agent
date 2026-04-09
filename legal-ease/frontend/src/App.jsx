@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UploadPage from './components/UploadPage';
 import ResultsPage from './components/ResultsPage';
-import { Scale } from 'lucide-react';
+import { Scale, Shield, Globe, Award } from 'lucide-react';
 
 function App() {
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -16,47 +16,67 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen text-slate-200">
-      {/* Background Mesh */}
+    <div className="min-h-screen text-slate-200 selection:bg-primary selection:text-white">
+      {/* Dynamic Background Mesh */}
       <div className="bg-mesh" />
 
-      {/* Persistent Nav */}
-      <nav className="p-6 flex items-center justify-between relative z-50">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={handleReset}>
-          <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
-            <Scale className="text-primary-light w-5 h-5" />
+      {/* Global Navigation Dock */}
+      <nav className="fixed top-6 left-0 right-0 z-[100] px-6">
+        <div className="max-w-6xl mx-auto flex items-center justify-between glass h-16 px-8 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-2xl bg-black/40">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="flex items-center gap-3 cursor-pointer group" 
+            onClick={handleReset}
+          >
+            <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+              <Scale className="text-primary-light w-5 h-5 group-hover:text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-black tracking-widest text-white uppercase text-xs leading-none">LegalEase AI</span>
+              <span className="text-[8px] font-bold text-slate-500 tracking-[0.3em] uppercase mt-1">Agent Interface</span>
+            </div>
+          </motion.div>
+          
+          <div className="hidden md:flex items-center gap-10">
+             <div className="flex items-center gap-2 group cursor-help">
+                <Shield size={14} className="text-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-200 transition-colors">Encrypted</span>
+             </div>
+             <div className="flex items-center gap-2 group cursor-help">
+                <Globe size={14} className="text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-200 transition-colors">Multi-Agent</span>
+             </div>
+             <div className="w-px h-6 bg-white/5" />
+             <button className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/20 transition-all text-slate-300">
+               Hackathon Build v4
+             </button>
           </div>
-          <span className="font-bold tracking-tight text-white uppercase text-sm">LegalEase AI</span>
-        </div>
-        
-        <div className="flex items-center gap-6">
-           <a href="#" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors">Documentation</a>
-           <a href="#" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors">Pricing</a>
-           <button className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white/10 transition-all">
-             Contact Sales
-           </button>
+
+          <div className="md:hidden">
+             <Scale className="text-primary-light w-6 h-6" />
+          </div>
         </div>
       </nav>
 
-      <main>
+      <main className="pt-24 min-h-screen">
         <AnimatePresence mode="wait">
           {!analysisResult ? (
             <motion.div
               key="upload"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.02, filter: 'blur(20px)' }}
+              transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
             >
               <UploadPage onAnalysisComplete={handleAnalysisComplete} />
             </motion.div>
           ) : (
             <motion.div
               key="results"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -100 }}
+              transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
             >
               <ResultsPage data={analysisResult} onReset={handleReset} />
             </motion.div>
@@ -64,12 +84,22 @@ function App() {
         </AnimatePresence>
       </main>
 
-      {/* Footer Decoration */}
+      {/* Global Status Footer Decoration */}
       {!analysisResult && (
-        <footer className="py-12 text-center opacity-30 select-none">
-          <p className="text-xs font-bold uppercase tracking-[0.4em]">Proprietary AI Engine v2.4.1</p>
-        </footer>
+        <motion.footer 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.3 }}
+          className="fixed bottom-10 left-0 right-0 text-center select-none pointer-events-none"
+        >
+          <div className="flex flex-col items-center gap-3">
+             <p className="text-[9px] font-black uppercase tracking-[0.6em]">Proprietary AI Engine • Active Learning v2.4.1</p>
+             <div className="w-40 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          </div>
+        </motion.footer>
       )}
+
+      {/* Aesthetic Overlays */}
+      <div className="fixed inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] z-[9999]"></div>
     </div>
   );
 }

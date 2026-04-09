@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale, Sparkles, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
 const UploadPage = ({ onAnalysisComplete }) => {
@@ -23,7 +23,7 @@ const UploadPage = ({ onAnalysisComplete }) => {
 
   const handleAnalyze = async () => {
     if (!file) {
-      setError("Please upload a PDF document first.");
+      setError("Please select a document to analyze.");
       return;
     }
 
@@ -35,171 +35,186 @@ const UploadPage = ({ onAnalysisComplete }) => {
     formData.append('target_language', language);
 
     try {
+      // Simulate slight delay for the "wow" scanning animation
+      await new Promise(r => setTimeout(r, 1500));
       const response = await axios.post('http://localhost:8000/api/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onAnalysisComplete(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || "Failed to analyze document. Please check your backend connection.");
+      setError(err.response?.data?.detail || "Failed to analyze document. Ensure the backend is running.");
       setIsAnalyzing(false);
     }
   };
 
   return (
-    <div className="relative min-h-[90vh] flex flex-col items-center justify-center px-4">
-      {/* Floating background particles (CSS only simple ones) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-primary/10"
-            style={{
-              width: Math.random() * 300 + 50,
-              height: Math.random() * 300 + 50,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.1, 0.2, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 5 + 5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
+    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20">
+      {/* Decorative Orbs */}
+      <div className="glow-orb top-[-10%] left-[-10%] opacity-20" />
+      <div className="glow-orb bottom-[-10%] right-[-10%] opacity-20" style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)' }} />
+      <div className="bg-grid" />
 
-      {/* Header */}
+      {/* Hero Header */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-12 relative z-10"
+        className="text-center z-10 mb-16 space-y-4 px-4"
       >
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Scale className="w-10 h-10 text-primary-light" />
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
-            LegalEase AI
-          </h1>
-        </div>
-        <p className="text-xl text-slate-400 mt-2 font-light">
-          Understand Any Legal Document in <span className="text-primary-light font-medium italic">10 Seconds</span>
+        <motion.div 
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6"
+        >
+          <Sparkles className="w-4 h-4 text-primary-light" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-light">Next-Gen Legal Analysis</span>
+        </motion.div>
+        
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.1]">
+          Legal clarity for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-secondary to-primary-light animate-gradient-x">everyone.</span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+          Upload any legal agreement and get a plain-language summary in <span className="text-white font-medium">10 seconds</span>. 
+          Powered by advanced AI agents.
         </p>
       </motion.div>
 
-      {/* Upload Box */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="w-full max-w-2xl z-10"
-      >
-        <div className="glass-card rounded-3xl p-8 md:p-12 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Scale size={120} />
-          </div>
-
-          <div 
-            {...getRootProps()} 
-            className={`
-              relative group cursor-pointer border-2 border-dashed rounded-2xl p-10 transition-all duration-300
-              ${isDragActive ? 'border-primary bg-primary/5' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}
-            `}
-          >
-            <input {...getInputProps()} />
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Upload className="w-8 h-8 text-primary-light" />
-              </div>
-              <div>
-                <p className="text-lg font-medium">
-                  {file ? file.name : "Drag & drop your PDF here"}
-                </p>
-                <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-bold">
-                  OR CLICK TO BROWSE
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* Language Selector */}
-            <div className="relative">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">
-                Target Language
-              </label>
-              <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-                <Globe size={18} className="text-primary-light" />
-                <select 
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-transparent border-none outline-none w-full text-sm font-medium focus:ring-0 cursor-pointer"
+      {/* Main Upload Area */}
+      <div className="w-full max-w-3xl z-10 px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card rounded-[40px] p-2 overflow-hidden relative"
+        >
+          <div className="bg-[#0c0c12]/80 rounded-[38px] p-10 md:p-14 relative overflow-hidden">
+            
+            {/* Animated Scanning Beam */}
+            <AnimatePresence>
+              {isAnalyzing && (
+                <motion.div 
+                   initial={{ top: '-100%' }}
+                   animate={{ top: '100%' }}
+                   exit={{ opacity: 0 }}
+                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                   className="absolute left-0 right-0 h-40 bg-gradient-to-b from-transparent via-primary/20 to-transparent z-20 pointer-events-none"
                 >
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                  <option value="Telugu">Telugu</option>
-                </select>
+                  <div className="h-[2px] w-full bg-primary-light shadow-[0_0_20px_rgba(167,139,250,1)]" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div 
+              {...getRootProps()} 
+              className={`
+                relative group flex flex-col items-center justify-center border-2 border-dashed rounded-[30px] p-12 transition-all duration-500
+                ${isDragActive ? 'border-primary bg-primary/5 scale-[0.98]' : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'}
+                ${file ? 'border-emerald-500/30 bg-emerald-500/5' : ''}
+              `}
+            >
+              <input {...getInputProps()} />
+              
+              <div className="mb-6 relative">
+                 <div className="absolute inset-0 bg-primary blur-3xl opacity-20 animate-pulse" />
+                 <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${file ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary-light group-hover:scale-110'}`}>
+                   {file ? <FileText size={32} /> : <Upload size={32} />}
+                 </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-xl font-semibold text-white mb-2">
+                  {file ? file.name : "Select your Legal PDF"}
+                </p>
+                <p className="text-sm text-slate-500 font-medium">
+                  {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB • Ready for analysis` : "Drag and drop or click to browse files"}
+                </p>
               </div>
             </div>
 
-            {/* Analyze Button */}
-            <div className="pt-6 md:pt-0">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || !file}
-                className={`
-                  w-full py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg transition-all
-                  ${isAnalyzing || !file 
-                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                    : 'bg-primary hover:bg-primary-dark text-white glow-pulse'
-                  }
-                `}
-              >
-                {isAnalyzing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </span>
-                ) : "Analyze Document"}
-              </motion.button>
-            </div>
-          </div>
+            {/* controls */}
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Language</span>
+                  <div className="relative group">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-light z-10" />
+                    <select 
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-12 py-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer appearance-none"
+                    >
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Telugu">Telugu</option>
+                    </select>
+                  </div>
+               </div>
 
-          {/* Messages */}
-          <AnimatePresence>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm"
-              >
-                <AlertCircle size={18} />
-                {error}
-              </motion.div>
-            )}
-            {isAnalyzing && !error && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-10 text-center"
-              >
-                <p className="text-primary-light text-sm animate-pulse flex items-center justify-center gap-2 font-medium">
-                  <CheckCircle2 size={16} />
-                  Analyzing your document with AI...
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
+               <div className="flex items-end">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing || !file}
+                    className={`
+                      w-full h-[60px] rounded-2xl font-bold uppercase tracking-[0.1em] text-sm flex items-center justify-center gap-3 transition-all
+                      ${isAnalyzing || !file 
+                        ? 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5' 
+                        : 'bg-primary hover:bg-primary-dark text-white shadow-[0_0_30px_rgba(139,92,246,0.5)] glow-pulse'
+                      }
+                    `}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        Analyze Document
+                        <ChevronRight size={18} />
+                      </>
+                    )}
+                  </motion.button>
+               </div>
+            </div>
+
+            {/* Status Messages */}
+            <AnimatePresence>
+               {error && (
+                 <motion.div 
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   exit={{ opacity: 0 }}
+                   className="mt-8 p-4 bg-risk-high/10 border border-risk-high/20 rounded-2xl flex items-center gap-3 text-risk-high text-sm font-medium"
+                 >
+                   <AlertCircle size={18} />
+                   {error}
+                 </motion.div>
+               )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* trust indicators */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+        >
+           <div className="flex items-center gap-2">
+             <Scale size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-widest">Legally Secure</span>
+           </div>
+           <div className="flex items-center gap-2">
+             <CheckCircle2 size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-widest">Privacy Protected</span>
+           </div>
+           <div className="flex items-center gap-2">
+             <sparkles size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-widest">AI Agent Powered</span>
+           </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

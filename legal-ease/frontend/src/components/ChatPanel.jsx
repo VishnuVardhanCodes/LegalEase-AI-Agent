@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, MessageSquare, Zap, Target } from 'lucide-react';
 import axios from 'axios';
 
 const ChatPanel = ({ documentContext, language }) => {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I\'ve analyzed your document. Ask me anything about specific clauses or general risks.' }
+    { role: 'assistant', content: 'Doc Intelligence active. I\'ve analyzed the agreement metrics. How can I assist with specific clauses or risk mitigation?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -35,7 +35,7 @@ const ChatPanel = ({ documentContext, language }) => {
 
       setMessages(prev => [...prev, { role: 'assistant', content: response.data.answer }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error connecting to the AI service. Please try again." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "System offline. Failed to reach doc-intelligence agent." }]);
     } finally {
       setIsTyping(false);
     }
@@ -43,58 +43,76 @@ const ChatPanel = ({ documentContext, language }) => {
 
   const suggestedQuestions = [
     "What is the biggest risk?",
-    "Explain the termination clause",
+    "Explain Clause 5",
     "Is this safe to sign?"
   ];
 
   return (
-    <div className="glass-card rounded-3xl h-full flex flex-col overflow-hidden border border-white/10 shadow-2xl">
-      <div className="p-6 border-b border-white/10 bg-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <Bot className="text-primary-light" size={24} />
+    <div className="glass-card rounded-[40px] h-full flex flex-col overflow-hidden relative border border-white/10 shadow-2xl">
+      {/* Dynamic Header */}
+      <div className="p-8 border-b border-white/5 bg-white/[0.02] relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+             <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-20 animate-pulse" />
+             <div className="w-14 h-14 rounded-2xl bg-[#0c0c12] border border-emerald-500/20 flex items-center justify-center relative z-10">
+                <Bot className="text-emerald-400" size={28} />
+             </div>
           </div>
           <div>
-            <h3 className="font-bold text-white text-lg">AI Assistant</h3>
-            <p className="text-[10px] text-primary-light font-bold uppercase tracking-widest flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Online • Ready to help
-            </p>
+            <h3 className="font-black text-white text-lg tracking-tight">Legal AI Agent</h3>
+            <div className="flex items-center gap-2 mt-1">
+               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+               <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Message Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth"
+        className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth z-10 custom-scrollbar"
       >
         {messages.map((msg, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`
-              max-w-[85%] p-4 rounded-2xl relative
-              ${msg.role === 'user' 
-                ? 'bg-primary text-white rounded-tr-none' 
-                : 'bg-white/5 text-slate-200 border border-white/10 rounded-tl-none'
-              }
-            `}>
+            <div className="flex items-start gap-4 max-w-[90%]">
                {msg.role === 'assistant' && (
-                <div className="absolute -top-3 -left-3 w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
-                  <Sparkles size={12} className="text-primary-light" />
-                </div>
-              )}
-              <p className="text-sm leading-relaxed">{msg.content}</p>
+                 <div className="w-8 h-8 rounded-[10px] bg-white/5 border border-white/5 flex items-center justify-center shrink-0 mt-1">
+                    <Zap size={14} className="text-primary-light" />
+                 </div>
+               )}
+               
+               <div className={`
+                p-5 rounded-[28px] relative
+                ${msg.role === 'user' 
+                  ? 'bg-primary text-white rounded-tr-none shadow-[0_10px_20px_rgba(139,92,246,0.3)]' 
+                  : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none font-medium'
+                }
+              `}>
+                <p className="text-sm leading-relaxed">{msg.content}</p>
+                {msg.role === 'user' && (
+                   <div className="mt-2 text-[8px] font-black text-white/40 uppercase tracking-widest text-right">User Identity Verified</div>
+                )}
+              </div>
+
+               {msg.role === 'user' && (
+                 <div className="w-8 h-8 rounded-[10px] bg-primary-light/20 border border-primary-light/20 flex items-center justify-center shrink-0 mt-1">
+                    <User size={14} className="text-white" />
+                 </div>
+               )}
             </div>
           </motion.div>
         ))}
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/10">
-              <div className="flex gap-1.5">
+          <div className="flex justify-start gap-4">
+            <div className="w-8 h-8 rounded-[10px] bg-white/5 shrink-0" />
+            <div className="bg-white/5 px-6 py-4 rounded-[28px] rounded-tl-none border border-white/5">
+              <div className="flex gap-2">
                 <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce"></span>
                 <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce [animation-delay:0.2s]"></span>
                 <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce [animation-delay:0.4s]"></span>
@@ -104,36 +122,43 @@ const ChatPanel = ({ documentContext, language }) => {
         )}
       </div>
 
-      <div className="p-6 bg-white/5 border-t border-white/10">
-        <div className="flex flex-wrap gap-2 mb-4">
+      {/* Input Area */}
+      <div className="p-8 bg-black/20 border-t border-white/5 z-10 backdrop-blur-md">
+        <div className="flex flex-wrap gap-2 mb-6 justify-center">
           {suggestedQuestions.map((q, i) => (
-            <button
+            <motion.button
               key={i}
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)' }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => { setInput(q); }}
-              className="text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-primary-light transition-all"
+              className="text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2.5 rounded-full bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-all shadow-sm"
             >
               {q}
-            </button>
+            </motion.button>
           ))}
         </div>
         
-        <form onSubmit={handleSend} className="relative">
+        <form onSubmit={handleSend} className="relative group">
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary-light to-transparent opacity-30 group-focus-within:opacity-100 transition-opacity" />
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about this document..."
-            className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-primary/50 transition-colors pr-14 placeholder:text-slate-600"
+            placeholder="Query the AI Agent..."
+            className="w-full bg-white/[0.03] border border-white/10 rounded-[28px] px-8 py-5 text-sm font-medium text-white focus:outline-none focus:border-primary/50 transition-all pr-16 placeholder:text-slate-600 shadow-inner group-hover:bg-white/[0.05]"
           />
           <button
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-primary flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-primary flex items-center justify-center hover:bg-primary-dark transition-all disabled:opacity-50 shadow-lg text-white group-hover:scale-105"
           >
-            <Send size={18} className="text-white" />
+            <Send size={20} />
           </button>
         </form>
       </div>
+
+      {/* Decorative Grid In Chat */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
     </div>
   );
 };
