@@ -40,8 +40,8 @@ const UploadPage = ({ onAnalysisComplete }) => {
     formData.append('target_language', language);
 
     try {
-      // Simulate slight delay for the "wow" scanning animation
-      await new Promise(r => setTimeout(r, 1500));
+      // Reduced delay for faster performance per user request
+      await new Promise(r => setTimeout(r, 400));
       const response = await axios.post('http://localhost:8000/api/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -284,8 +284,8 @@ const UploadPage = ({ onAnalysisComplete }) => {
              <span className="text-[10px] font-bold uppercase tracking-widest">Privacy Protected</span>
            </div>
            <div className="flex items-center gap-2">
-             <sparkles size={20} />
-             <span className="text-[10px] font-bold uppercase tracking-widest">AI Agent Powered</span>
+             <Sparkles size={20} />
+             <span className="text-[10px] font-bold uppercase tracking-widest">AI Agent Powererd</span>
            </div>
         </motion.div>
       </div>

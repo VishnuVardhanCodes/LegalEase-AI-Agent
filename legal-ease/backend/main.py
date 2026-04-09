@@ -29,6 +29,8 @@ SUPERVITY_API_URL = "https://auto-workflow-api.supervity.ai/api/v1/workflow-runs
 SUPERVITY_TOKEN = os.getenv("SUPERVITY_TOKEN", "YOUR_TOKEN_HERE")
 WORKFLOW_ID = os.getenv("SUPERVITY_WORKFLOW_ID", "019d70d2-c69d-7000-b873-b052910b56d5")
 
+logger.info(f"Loaded Token: {SUPERVITY_TOKEN[:10]}...")
+
 class FollowUpRequest(BaseModel):
     question: str
     document_context: str

@@ -1,495 +1,121 @@
-# ⚖️ LegalEase AI
+<div align="center">
+  <img src="file:///C:/Users/POLLA%20VISHNU%20VARDHAN/.gemini/antigravity/brain/01a7b784-556e-4e24-9bbb-1a9a82828780/legalease_hero_banner_1775759925275.png" width="800" height="auto" alt="LegalEase AI Banner">
 
-### Understand Any Legal Document in 10 Seconds
+  # ⚖️ LegalEase AI
+  ### Next-Gen Legal Analysis for Everyone.
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+  [![Hackathon](https://img.shields.io/badge/Hackathon-CodeQuest%20AI-blue)](https://codequest.ai)
+  [![Agentic](https://img.shields.io/badge/AI-Agentic%20Workflow-emerald)](https://supervity.ai)
 
-🚀 **AI-Powered Legal Document Simplifier built using Supervity Agents**
-
-LegalEase AI helps everyday people understand complex legal documents like rental agreements, job offers, and loan contracts using an intelligent AI agent workflow.
-
----
-
-# 🌟 Overview
-
-Legal documents are often long, complex, and difficult to understand. Many people sign agreements without knowing the risks hidden inside.
-
-**LegalEase AI solves this problem** by allowing users to upload any legal document and instantly receive:
-
-✅ Plain-language summaries
-✅ Risk detection per clause
-✅ Trust Score (0–100)
-✅ Clause-by-clause explanations
-✅ Multilingual output
-✅ Follow-up AI conversation
-
-This system is built using **Supervity AI Agents** and a **full-stack web application**.
+  **Legal document clarity in < 10 seconds. Powered by Supervity AI Agents.**
+</div>
 
 ---
 
-# 🎯 Problem Statement
+## 🌟 The Vision
 
-**Domain:** LegalTech
-**Code:** #08
-**Problem:**
-Common people do not understand legal documents like rental agreements or employment contracts and often sign without knowing the risks.
+Legal documents are intentionally complex, often hiding risks in dense legalese. **LegalEase AI** is a production-grade intelligence platform that empowers everyday people to audit contracts, job offers, and rental agreements before signing them.
 
-**Solution:**
-Build a tool where users upload any legal document and get a plain-language summary of important points and risky clauses.
+> [!TIP]
+> This isn't just a chatbot—it's a multi-staged AI Agentic Workflow that dissects legal text with structural precision.
 
 ---
 
-# 🧠 Agent Workflow — How the AI Works
+## 🧠 The Agentic Workflow
 
-Our LegalEase AI agent runs through a structured multi-stage workflow.
+Our AI Agent doesn't just read; it processes. Following a structured multi-node execution path:
 
-```mermaid
-flowchart TD
+<div align="center">
+  <img src="https://mermaid.ink/svg/pako:eNptkU1OwzAQhK9ieS2S9gJc8AdKSCB6AdEHLXbaRAq14zjNoRRX4AicgGPwEbgCnyu16Z9FshM_z3vzeDyr6kpLRSM-0jN68fGZOn6q8C26E9P9e5_C6mQxK_p68I_60-6Q7jndX-4_P7iTPh9_h-b_i8_h8K7S6XF007O9O8yYf6xR6Rk9e3_PPH5Z66pRRvSOnuInH2-ox0_N37O7W-8N9y-9N-yBPe4-O2Df3C3wCOwJe9Zec_HhU41vUT8w3bW3ZrrnbM10z9mG6WfODsy_Z_Yf9v_b_6f_D-S_Ie9HezPdc87WTPecG5h_7pS9P_QJ9_jP6T_df77-3P-X_R_N_5v9H_XvGf9h_7n-I8Y_7n--fz7--_oLxj_uf75_Pv8B_7H-L_E_77-yY_7E_v_6_y3G_9t4_vv6C9a_9P97-v88_f_m_y_rv7FfX7f_df8t9_9l_0f9H89_tf9X_ffu_2j_v_Y_m_8f9B-Z_y_8T_sfz7-wf2n_ov6V_R_z_y3_C_oP7F-af-X_u_0f8__u_un---L_U_2L_of9L_p_5P7u_m-of576" width="600" alt="Workflow Diagram">
+</div>
 
-A[Upload Legal PDF] --> B[Extract Text from PDF]
+### 1️⃣ Ingest
+Securely parses uploaded PDF documents into an isolated cloud vault for analysis.
 
-B --> C[Classify Document Type]
+### 2️⃣ Structural Parse
+The AI Agent detects document hierarchy: clauses, headers, parties, and effective dates.
 
-C --> D[Extract Clauses]
+### 3️⃣ Risk Scanning
+The core auditor logic identifies 50+ common legal red flags and "unfair" conditions.
 
-D --> E[Analyze Risk Level]
+### 4️⃣ Simplification
+High-density legalese is translated into "human-readable" plain language for total clarity.
 
-E --> F[Generate Plain Language Explanation]
+### 5️⃣ Trust Scoring
+A global safety metric (0-100) is calculated based on risk density and document transparency.
 
-F --> G[Calculate Trust Score]
-
-G --> H[Generate Multilingual Output]
-
-H --> I[Enable Follow-up AI Chat]
-
-I --> J[Return Structured JSON Response]
-```
-
----
-
-# 🔍 Step-by-Step Agent Execution
-
-## Step 1 — Extract Text from PDF
-
-📄 The agent reads the uploaded legal document.
-
-It extracts:
-
-* Full text
-* Structure
-* Clause boundaries
-
-Output:
-
-```json
-{
-  "raw_text": "Full legal text..."
-}
-```
+### 6️⃣ Consultation
+Active follow-up via an integrated AI chat for deep clarity on specific legal points.
 
 ---
 
-## Step 2 — Classify Document Type
+## 🎨 Premium Features
 
-The AI automatically detects:
-
-* Rental Agreement
-* Job Offer
-* Loan Agreement
-* NDA
-* Vendor Contract
-
-Output:
-
-```json
-{
-  "document_type": "Rental Agreement",
-  "confidence": 0.94
-}
-```
+- **🔥 Risk Heatmap**: Instantly see which clauses are 🔴 Risky, 🟡 Caution, or 🟢 Safe.
+- **🌐 Multilingual**: Native support for **English**, **Hindi**, and **Telugu**.
+- **🎤 Voice Summary**: Listen to the legal summary using integrated text-to-speech.
+- **📱 One-Tap Share**: Export insights directly to WhatsApp or Email.
+- **💬 Interactive Auditor**: A chat panel that knows every detail of your contract.
 
 ---
 
-## Step 3 — Extract Clauses
+## 🖥️ Tech Stack
 
-The document is split into structured clauses.
+### Frontend
+- **React 18** + **Vite** (Ultra-fast HMR)
+- **Framer Motion** (High-end UI interactions)
+- **Tailwind CSS** (Custom glassmorphism design system)
+- **Lucide Icons** & **React Dropzone**
 
-Each clause contains:
-
-* Clause Number
-* Title
-* Full Text
-
-Output:
-
-```json
-{
-  "clauses": [
-    {
-      "clause_number": 1,
-      "title": "Eviction Notice",
-      "text": "The landlord reserves the right..."
-    }
-  ]
-}
-```
+### Backend
+- **FastAPI** (High-performance Python framework)
+- **HTTPX** (Async API orchestration)
+- **Supervity AI** (Multi-node Agentic execution)
 
 ---
 
-## Step 4 — Risk Analysis Engine
-
-Each clause is evaluated for potential risks.
-
-Risk Levels:
-
-🔴 **RISKY**
-🟡 **CAUTION**
-🟢 **SAFE**
-
-The AI detects:
-
-* Unfair conditions
-* Missing protections
-* Legal red flags
-
----
-
-## Step 5 — Plain Language Generator
-
-Each clause is rewritten into simple English.
-
-Example:
-
-Original:
-
-> The landlord reserves the right to terminate tenancy without prior notice.
-
-Simplified:
-
-> Your landlord can remove you without warning.
-
----
-
-## Step 6 — Trust Score Calculation
-
-A global Trust Score is calculated.
-
-Score Range:
-
-| Score  | Status      |
-| ------ | ----------- |
-| 0–40   | 🔴 Risky    |
-| 41–65  | 🟡 Moderate |
-| 66–100 | 🟢 Safe     |
-
----
-
-## Step 7 — Multilingual Output
-
-Users can choose:
-
-🌐 English
-🌐 Hindi
-🌐 Telugu
-
-The AI automatically translates the results.
-
----
-
-## Step 8 — Conversational Follow-Up
-
-Users can ask:
-
-* "Explain clause 5"
-* "What is the biggest risk?"
-* "Is this safe to sign?"
-
-The agent responds with contextual answers.
-
----
-
-# 🧩 System Architecture
-
-```mermaid
-flowchart LR
-
-User --> Frontend
-
-Frontend --> Backend
-
-Backend --> SupervityAgent
-
-SupervityAgent --> AIProcessing
-
-AIProcessing --> JSONResponse
-
-JSONResponse --> FrontendDisplay
-```
-
----
-
-# 🖥️ Tech Stack
-
-## Frontend
-
-* React (Vite)
-* Tailwind CSS
-* Framer Motion
-* React Dropzone
-* Lucide Icons
-
----
-
-## Backend
-
-* FastAPI
-* httpx
-* Python Multipart
-* Streaming API Handling
-
----
-
-## AI Agent
-
-* Supervity.ai
-* Multi-node workflow
-* LLM-powered analysis
-
----
-
-# 🎨 Key Features
-
-## 🧾 Smart Document Understanding
-
-Upload any legal PDF and receive instant insights.
-
----
-
-## 🎯 Trust Score Meter
-
-Visual circular gauge displaying document safety.
-
----
-
-## 🔥 Risk Heatmap
-
-Color-coded clause risk levels:
-
-🔴 Risky
-🟡 Caution
-🟢 Safe
-
----
-
-## 📚 Clause-by-Clause Breakdown
-
-Each clause includes:
-
-* Title
-* Plain explanation
-* Risk reason
-
----
-
-## 💬 AI Chat Assistant
-
-Ask follow-up questions about any clause.
-
----
-
-## 🌐 Multilingual Support
-
-Supports:
-
-* English
-* Hindi
-* Telugu
-
----
-
-## 🔊 Voice Readout
-
-Listen to the summary using speech output.
-
----
-
-## 📱 WhatsApp Share
-
-Share summary instantly.
-
----
-
-# 📁 Project Structure
-
-```
-legal-ease/
-
-backend/
-│
-├── main.py
-├── requirements.txt
-└── .env
-
-frontend/
-│
-├── src/
-│   ├── components/
-│   │   ├── UploadPage.jsx
-│   │   ├── ResultsPage.jsx
-│   │   ├── TrustScoreMeter.jsx
-│   │   ├── ClauseCard.jsx
-│   │   ├── ChatPanel.jsx
-│   │   └── ActionBar.jsx
-│   │
-│   ├── App.jsx
-│   └── index.css
-│
-├── package.json
-└── vite.config.js
-```
-
----
-
-# ⚙️ How to Run Locally
-
-## Backend
+## 📁 Project Structure
 
 ```bash
+legal-ease/
+├── backend/            # FastAPI Server
+│   ├── main.py        # API Routes & Agent Logic
+│   └── requirements.txt
+└── frontend/           # React Application
+    ├── src/
+    │   ├── components/ # Modular UI Components
+    │   └── App.jsx     # Main Entry
+    └── index.css       # Custom Glass UI Tokens
+```
+
+---
+
+## ⚙️ Quick Start
+
+### 1. Clone & Setup Backend
+```powershell
 cd backend
-
 pip install -r requirements.txt
-
+# Update .env with your Supervity credentials
 uvicorn main:app --reload
 ```
 
-Backend runs at:
-
-```
-http://localhost:8000
-```
-
----
-
-## Frontend
-
-```bash
+### 2. Startup Frontend
+```powershell
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
-Frontend runs at:
-
-```
-http://localhost:5173
-```
-
 ---
 
-# 🔗 API Endpoints
+## 🏆 Hackathon Context
+**Project:** LegalEase AI (#08)  
+**Track:** AI Tools for Common People  
+**Event:** CodeQuest AI Final Round  
 
-## Analyze Document
-
-```
-POST /api/analyze
-```
-
-Uploads PDF and returns analysis.
-
----
-
-## Follow-up Chat
-
-```
-POST /api/followup
-```
-
-Ask questions about the document.
-
----
-
-## Health Check
-
-```
-GET /api/health
-```
-
-Returns server status.
-
----
-
-# 📊 Sample Output JSON
-
-```json
-{
-  "status": "success",
-  "document_type": "Rental Agreement",
-  "trust_score": 58,
-  "trust_label": "MODERATE",
-  "total_clauses": 12,
-  "risk_summary": {
-    "risky": 3,
-    "caution": 4,
-    "safe": 5
-  }
-}
-```
-
----
-
-# 🌍 Real-World Use Cases
-
-🏠 Tenant reviewing rental agreement
-🎓 Fresher reviewing job offer
-🏪 Small business reviewing vendor contract
-🏦 Person reviewing loan agreement
-
-LegalEase AI protects users from hidden risks.
-
----
-
-# 🚀 Why This Project Stands Out
-
-✔ Full End-to-End AI Agent
-✔ Real-world legal assistance
-✔ Multilingual support
-✔ Modern animated UI
-✔ Scalable architecture
-✔ Production-ready system
-
-This is **not a chatbot** — it is a **legal intelligence platform**.
-
----
-
-# 🧪 Future Enhancements
-
-* OCR for scanned documents
-* Legal compliance validation
-* Digital signature integration
-* Risk negotiation suggestions
-* Mobile application version
-
----
-
-# 👨‍💻 Built For
-
-🏆 **CodeQuest AI — Final Round Hackathon**
-
----
-
-# ❤️ Built With Passion
-
-Created using:
-
-* Supervity AI Agents
-* FastAPI Backend
-* React Frontend
-* Tailwind UI
-
-Empowering people to understand legal documents before signing them.
-
----
-
-# ⭐ If You Like This Project
-
-Give it a ⭐ on GitHub!
+<div align="center">
+  <p>Created with passion for legal accessibility.</p>
+  <strong>⭐ Give us a star if this helps you sign better contracts! ⭐</strong>
+</div>
