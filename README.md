@@ -1,4 +1,10 @@
 <div align="center">
+  <img src="./legal-ease/frontend/src/assets/banner.png" width="800" height="auto" alt="LegalEase AI Banner">
+
+  # ⚖️ LegalEase AI
+  ### Next-Gen Legal Analysis for Everyone.
+  
+
   **Legal document clarity in < 10 seconds. Powered by Supervity AI Agents.**
 </div>
 
