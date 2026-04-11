@@ -298,6 +298,430 @@ async def extract_clauses(request: ExtractRequest):
         
     return {"clauses": clauses_result}
 
+ANALYZE_RISK_SYSTEM_PROMPT = """
+You are a legal risk analysis expert.
+
+Your task is to analyze each clause in the legal document and determine the risk level.
+
+The document type is:
+{document_type}
+
+You will receive a list of clauses.
+
+For each clause:
+
+1. Read the clause carefully.
+2. Identify any risks, obligations, penalties, or unfair terms.
+3. Assign a risk level:
+   SAFE
+   CAUTION
+   RISKY
+
+Definitions:
+
+SAFE:
+Standard clause with fair and balanced terms.
+
+CAUTION:
+Clause contains conditions that require attention.
+
+RISKY:
+Clause contains unfair, strict, or potentially harmful terms.
+
+Examples of risky patterns:
+
+- Immediate termination
+- Heavy penalties
+- Loss of deposit
+- Unlimited liability
+- No notice period
+- High interest rates
+- Confidentiality restrictions
+
+Return output ONLY in JSON.
+
+Output format:
+
+{{
+ "risk_analysis": [
+   {{
+     "clause_number": 1,
+     "risk_level": "SAFE",
+     "risk_reason": "This clause contains standard fair terms."
+   }}
+ ]
+}}
+"""
+
+def analyze_risk_with_groq(clauses_json: str, document_type: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        prompt = ANALYZE_RISK_SYSTEM_PROMPT.format(document_type=document_type)
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": clauses_json}
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in analyze_risk: {e}")
+        return None
+
+class AnalyzeRiskRequest(BaseModel):
+    document_type: str
+    clauses: list
+
+@app.post("/api/analyze_risk")
+async def analyze_risk(request: AnalyzeRiskRequest):
+    logger.info(f"Analyzing risk for {len(request.clauses)} clauses.")
+    
+    # Try using Groq
+    client = get_groq_client()
+    if client:
+        logger.info("Using Groq API for Risk Analysis")
+        result = analyze_risk_with_groq(json.dumps(request.clauses), request.document_type)
+        if result:
+            return result
+            
+    # Fallback simulation logic
+    logger.info("Falling back to simulated risk analysis")
+    analysis = []
+    
+    for c in request.clauses:
+        text = str(c.get("clause_text", "")).lower()
+        num = c.get("clause_number", 0)
+        
+        level = "SAFE"
+        reason = "This clause contains standard fair terms."
+        
+        if "immediate termination" in text or "unlimited liability" in text or "no notice" in text or "heavy penalty" in text:
+            level = "RISKY"
+            reason = "Contains potentially unfair or severe conditions requiring immediate review."
+        elif "penalty" in text or "loss of deposit" in text or "confidential" in text or "interest rate" in text or "liable" in text:
+            level = "CAUTION"
+            reason = "Contains conditions that require attention. Verify terms before proceeding."
+            
+        analysis.append({
+            "clause_number": num,
+            "risk_level": level,
+            "risk_reason": reason
+        })
+        
+    return {"risk_analysis": analysis}
+
+SIMPLIFY_CLAUSES_SYSTEM_PROMPT = """
+You are a legal explanation assistant.
+
+Your task is to convert complex legal clauses into simple language that a 10th-grade student can understand.
+
+You will receive:
+1. Legal clauses
+2. Risk levels for each clause
+
+For each clause:
+1. Rewrite the clause in simple, everyday language.
+2. Explain why the clause matters to the user.
+3. Suggest what the user should do or check before signing.
+
+Guidelines:
+- Use short sentences.
+- Avoid legal jargon.
+- Use simple words.
+- Be clear and practical.
+- Match each explanation to its risk level.
+
+Risk Guidance:
+SAFE: Explain normally and reassure the user.
+CAUTION: Warn user to read carefully.
+RISKY: Clearly warn about possible harm.
+
+Return output ONLY in JSON.
+
+Output format:
+{{
+ "simplified_clauses": [
+   {{
+     "clause_number": 1,
+     "plain_explanation": "Simple explanation of the clause.",
+     "why_it_matters": "Explain consequences.",
+     "suggested_action": "What user should do."
+   }}
+ ]
+}}
+"""
+
+def simplify_clauses_with_groq(clauses_json: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": SIMPLIFY_CLAUSES_SYSTEM_PROMPT},
+                {"role": "user", "content": clauses_json}
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in simplify: {e}")
+        return None
+
+class SimplifyRequest(BaseModel):
+    clauses: list
+
+@app.post("/api/simplify_clauses")
+async def simplify_clauses(request: SimplifyRequest):
+    logger.info(f"Simplifying {len(request.clauses)} clauses.")
+    
+    # Try using Groq
+    client = get_groq_client()
+    if client:
+        logger.info("Using Groq API for Clause Simplification")
+        result = simplify_clauses_with_groq(json.dumps(request.clauses))
+        if result:
+            return result
+            
+    # Fallback simulation logic
+    logger.info("Falling back to simulated simplification")
+    simplified = []
+    for c in request.clauses:
+        num = c.get("clause_number", 0)
+        risk = str(c.get("risk_level", "SAFE")).upper()
+        
+        action = "You are good to proceed and accept this term."
+        if risk == "RISKY": 
+            action = "Consult a lawyer or strongly negotiate this term before agreeing."
+        elif risk == "CAUTION": 
+            action = "Double-check this term and ensure you understand the boundaries before signing."
+        
+        simplified.append({
+            "clause_number": num,
+            "plain_explanation": "This text simply explains the core rule of this section in basic English, removing any confusing legal phrasing.",
+            "why_it_matters": "It dictates the consequences if either party breaks this specific rule.",
+            "suggested_action": action
+        })
+        
+    return {"simplified_clauses": simplified}
+
+SCORE_DOCUMENT_SYSTEM_PROMPT = """
+You are a legal risk scoring system.
+
+Your job is to calculate an overall Trust Score (0 to 100) based on the risk levels of all clauses.
+
+You will receive risk levels for each clause.
+
+Scoring Rules:
+SAFE = +10 points
+CAUTION = +5 points
+RISKY = +0 points
+
+Steps:
+1. Count total clauses.
+2. Assign points based on risk levels.
+3. Calculate total score.
+4. Normalize score between 0-100.
+
+Then classify:
+80-100 -> SAFE DOCUMENT
+50-79 -> MODERATE RISK
+0-49 -> HIGH RISK
+
+Also generate:
+- Overall assessment
+- Short advice for the user
+
+Return output ONLY in JSON.
+
+Output format:
+{{
+ "trust_score": 78,
+ "overall_assessment": "MODERATE RISK",
+ "summary_advice": "Review risky clauses before signing this document."
+}}
+"""
+
+def score_document_with_groq(clauses_json: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": SCORE_DOCUMENT_SYSTEM_PROMPT},
+                {"role": "user", "content": clauses_json}
+            ],
+            temperature=0.0,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in scoring: {e}")
+        return None
+
+class ScoreRequest(BaseModel):
+    clauses: list
+
+@app.post("/api/score_document")
+async def score_document(request: ScoreRequest):
+    logger.info(f"Scoring document with {len(request.clauses)} clauses.")
+    
+    # Try using Groq
+    client = get_groq_client()
+    if client:
+        logger.info("Using Groq API for Document Scoring")
+        result = score_document_with_groq(json.dumps(request.clauses))
+        if result:
+            return result
+            
+    # Fallback numerical simulation logic
+    total_clauses = len(request.clauses)
+    if total_clauses == 0:
+        return {"trust_score": 100, "overall_assessment": "SAFE DOCUMENT", "summary_advice": "No clauses found."}
+        
+    total_points = 0
+    max_possible = total_clauses * 10
+    
+    for c in request.clauses:
+        risk = str(c.get("risk_level", "SAFE")).upper()
+        if risk == "SAFE": total_points += 10
+        elif risk == "CAUTION": total_points += 5
+        elif risk == "RISKY": total_points += 0
+        
+    score = int((total_points / max_possible) * 100) if max_possible > 0 else 100
+    
+    assessment = "SAFE DOCUMENT"
+    advice = "This document is standard and looks good to proceed."
+    if score < 50:
+        assessment = "HIGH RISK"
+        advice = "Extreme caution required. Do not sign without legal counsel."
+    elif score < 80:
+        assessment = "MODERATE RISK"
+        advice = "Review risky or cautious clauses before signing this document."
+        
+    return {
+        "trust_score": score,
+        "overall_assessment": assessment,
+        "summary_advice": advice
+    }
+
+TRANSLATE_SYSTEM_PROMPT = """
+You are a multilingual legal assistant.
+
+Your job is to translate simplified legal explanations into the user's preferred language.
+
+Supported languages:
+EN -> English
+HI -> Hindi
+TE -> Telugu
+
+You will receive:
+1. Simplified clauses
+2. Trust score
+3. Overall assessment
+4. Summary advice
+5. Target language
+
+Instructions:
+- Translate all explanations clearly.
+- Preserve meaning.
+- Keep sentences simple.
+- Do NOT change clause numbers.
+- Use natural conversational language.
+
+Language Rules:
+EN -> Return original English
+HI -> Translate into Hindi
+TE -> Translate into Telugu
+
+Return output ONLY in JSON.
+
+Output format:
+{{
+ "language": "HI",
+ "translated_summary": "...",
+ "translated_clauses": [
+   {{
+     "clause_number": 1,
+     "plain_explanation": "...",
+     "why_it_matters": "...",
+     "suggested_action": "..."
+   }}
+ ]
+}}
+"""
+
+def translate_with_groq(data_json: str, target_lang: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": TRANSLATE_SYSTEM_PROMPT},
+                {"role": "user", "content": f"Target Language: {target_lang}\n\nData Payload:\n{data_json}"}
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in translation: {e}")
+        return None
+
+class TranslateRequest(BaseModel):
+    clauses: list
+    trust_score: int
+    overall_assessment: str
+    summary_advice: str
+    target_language: str
+
+@app.post("/api/translate")
+async def translate_document(request: TranslateRequest):
+    logger.info(f"Translating {len(request.clauses)} clauses to {request.target_language}.")
+    
+    if request.target_language.upper() in ["EN", "ENGLISH"]:
+        # Shortcut return since it's already English
+        return {
+            "language": "EN",
+            "translated_summary": request.summary_advice,
+            "translated_clauses": request.clauses
+        }
+        
+    client = get_groq_client()
+    if client:
+        logger.info("Using Groq API for Translation")
+        data_to_send = json.dumps({
+            "clauses": request.clauses,
+            "trust_score": request.trust_score,
+            "overall_assessment": request.overall_assessment,
+            "summary_advice": request.summary_advice
+        })
+        
+        result = translate_with_groq(data_to_send, request.target_language)
+        if result:
+            return result
+            
+    # Fallback simulated translation response
+    return {
+        "language": request.target_language,
+        "translated_summary": f"[{request.target_language}] Simulated Translation of: {request.summary_advice}",
+        "translated_clauses": [
+            {
+                "clause_number": c.get("clause_number"),
+                "plain_explanation": f"[{request.target_language}] Translated explanation.",
+                "why_it_matters": f"[{request.target_language}] Translated significance.",
+                "suggested_action": f"[{request.target_language}] Translated action."
+            } for c in request.clauses
+        ]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -41,7 +41,41 @@ const UploadPage = ({ onAnalysisComplete }) => {
         document_type: classRes.data.document_type,
         text: textToClassify
       });
-      setExtractedClauses(extractRes.data.clauses);
+      const basicClauses = extractRes.data.clauses;
+
+      // 3. Risk Analysis
+      const riskRes = await axios.post('http://localhost:8000/api/analyze_risk', {
+        document_type: classRes.data.document_type,
+        clauses: basicClauses
+      });
+      const riskMapped = riskRes.data.risk_analysis || [];
+
+      // Merge early for simplication
+      const combinedForSimplify = basicClauses.map(c => {
+         const r = riskMapped.find(rk => rk.clause_number === c.clause_number);
+         return { ...c, risk_level: r ? r.risk_level : "SAFE" };
+      });
+
+      // 4. Simplify
+      const simpRes = await axios.post('http://localhost:8000/api/simplify_clauses', {
+        clauses: combinedForSimplify
+      });
+      const simpMapped = simpRes.data.simplified_clauses || [];
+
+      // Combine all data
+      const richClauses = basicClauses.map(c => {
+         const r = riskMapped.find(rk => rk.clause_number === c.clause_number);
+         const s = simpMapped.find(sm => sm.clause_number === c.clause_number);
+         return { 
+           ...c, 
+           risk_level: r?.risk_level || "SAFE", 
+           risk_reason: r?.risk_reason || "", 
+           plain_explanation: s?.plain_explanation || "", 
+           suggested_action: s?.suggested_action || "" 
+         };
+      });
+
+      setExtractedClauses(richClauses);
     } catch (err) {
       setError("Classification failed. Make sure backend is running.");
     } finally {
@@ -402,23 +436,80 @@ const UploadPage = ({ onAnalysisComplete }) => {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-6 pt-6 border-t border-white/5 space-y-4"
+                  className="mt-8 pt-8 border-t border-white/5 space-y-6"
                 >
-                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Extracted Clauses ({extractedClauses.length})</h4>
-                   <div className="max-h-64 overflow-y-auto pr-4 custom-scrollbar space-y-3">
-                      {extractedClauses.map((c, i) => (
-                        <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                           <div className="flex items-center gap-3 mb-2">
-                             <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-black">
-                               {c.clause_number}
+                   <div className="flex items-center gap-3 mb-2">
+                     <ShieldCheck className="text-emerald-400 w-5 h-5" />
+                     <h4 className="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em]">Deep Scan Complete • {extractedClauses.length} Clauses Analyzed</h4>
+                   </div>
+                   
+                   <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
+                      {extractedClauses.map((c, i) => {
+                        const getRiskColor = (level) => {
+                          switch (level) {
+                            case 'SAFE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                            case 'CAUTION': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                            case 'RISKY': return 'text-red-400 bg-red-500/10 border-red-500/20';
+                            default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
+                          }
+                        };
+
+                        return (
+                        <div key={i} className="p-6 rounded-3xl bg-[#0c0c12]/80 border border-white/5 space-y-5 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                           {/* Glow Effect */}
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
+                           
+                           {/* Header */}
+                           <div className="flex items-center justify-between relative z-10">
+                             <div className="flex items-center gap-3">
+                               <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-black border border-indigo-500/20">
+                                 {c.clause_number}
+                               </div>
+                               <span className="font-black text-white text-base tracking-tight">{c.clause_title}</span>
                              </div>
-                             <span className="font-bold text-slate-200 text-sm">{c.clause_title}</span>
+                             <div className={`px-3 py-1 rounded-full border text-[10px] font-bold tracking-widest ${getRiskColor(c.risk_level)}`}>
+                               {c.risk_level}
+                             </div>
                            </div>
-                           <p className="text-xs text-slate-400 leading-relaxed font-mono">
-                             {c.clause_text}
-                           </p>
+                           
+                           {/* Content Grid */}
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                              {/* Simplification */}
+                              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                                 <div className="flex items-center gap-2 text-indigo-400">
+                                   <Sparkles size={14} />
+                                   <span className="text-[10px] font-bold uppercase tracking-widest">Plain English Overview</span>
+                                 </div>
+                                 <p className="text-sm text-slate-300 font-medium leading-relaxed">
+                                   {c.plain_explanation}
+                                 </p>
+                                 {c.risk_reason && (
+                                   <div className="pt-3 mt-3 border-t border-white/5">
+                                     <p className="text-xs text-slate-400 leading-relaxed">
+                                       <span className="font-bold text-slate-300">Why it matters: </span>
+                                       {c.risk_reason}
+                                     </p>
+                                     <p className="text-xs text-slate-400 leading-relaxed mt-1">
+                                       <span className="font-bold text-indigo-300">Action: </span>
+                                       {c.suggested_action}
+                                     </p>
+                                   </div>
+                                 )}
+                              </div>
+                              
+                              {/* Original Text */}
+                              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
+                                 <div className="flex items-center gap-2 text-slate-500">
+                                   <FileText size={14} />
+                                   <span className="text-[10px] font-bold uppercase tracking-widest">Original Reference</span>
+                                 </div>
+                                 <p className="text-[11px] text-slate-500 leading-relaxed font-mono overflow-y-auto max-h-32 custom-scrollbar pr-2">
+                                   {c.clause_text}
+                                 </p>
+                              </div>
+                           </div>
                         </div>
-                      ))}
+                      )})}
                    </div>
                 </motion.div>
               )}
