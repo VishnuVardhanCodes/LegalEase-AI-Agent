@@ -18,6 +18,36 @@ const UploadPage = ({ onAnalysisComplete }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Classification State
+  const [textToClassify, setTextToClassify] = useState('');
+  const [classificationResult, setClassificationResult] = useState(null);
+  const [extractedClauses, setExtractedClauses] = useState(null);
+  const [isClassifying, setIsClassifying] = useState(false);
+
+  const handleClassifyText = async () => {
+    if (!textToClassify.trim()) return;
+    setIsClassifying(true);
+    setClassificationResult(null);
+    setExtractedClauses(null);
+    try {
+      // 1. Classify
+      const classRes = await axios.post('http://localhost:8000/api/classify', {
+        text: textToClassify
+      });
+      setClassificationResult(classRes.data);
+      
+      // 2. Extract Clauses
+      const extractRes = await axios.post('http://localhost:8000/api/extract', {
+        document_type: classRes.data.document_type,
+        text: textToClassify
+      });
+      setExtractedClauses(extractRes.data.clauses);
+    } catch (err) {
+      setError("Classification failed. Make sure backend is running.");
+    } finally {
+      setIsClassifying(false);
+    }
+  };
   const languages = ['English', 'Hindi', 'Telugu'];
   
   const docTags = [
@@ -325,6 +355,75 @@ const UploadPage = ({ onAnalysisComplete }) => {
             </AnimatePresence>
           </div>
         </motion.div>
+      </div>
+
+      {/* Quick Text Classification */}
+      <div className="w-full max-w-3xl z-10 px-4 mt-8">
+         <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-[40px] p-8 border border-white/5 bg-white/[0.01]"
+         >
+            <div className="flex items-center gap-3 mb-6">
+                <FileSearch className="text-indigo-400" size={20} />
+                <h3 className="text-lg font-bold text-white tracking-tight">Quick Document Classification</h3>
+            </div>
+            <textarea
+                value={textToClassify}
+                onChange={(e) => setTextToClassify(e.target.value)}
+                placeholder="Paste legal text here to instantly identify the document type (e.g. Landlord/Tenant, Employer, etc.)..."
+                className="w-full h-32 bg-[#0c0c12]/50 border border-white/10 rounded-2xl p-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50 transition-all resize-none shadow-inner custom-scrollbar"
+            />
+            <div className="flex justify-between items-center mt-4">
+                <button
+                   onClick={handleClassifyText}
+                   disabled={isClassifying || !textToClassify.trim()}
+                   className="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest bg-white/10 hover:bg-white/20 text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                   {isClassifying ? "CLASSIFYING..." : "CLASSIFY TEXT"}
+                </button>
+                {classificationResult && (
+                   <motion.div 
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     className="flex flex-col text-right"
+                   >
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Type Detected</span>
+                     <div className="flex items-center gap-3 mt-1">
+                        <span className="text-sm font-bold text-emerald-400">{classificationResult.document_type}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-500 text-[10px] font-black">{Math.round(classificationResult.confidence * 100)}%</span>
+                     </div>
+                   </motion.div>
+                )}
+            </div>
+
+            <AnimatePresence>
+              {extractedClauses && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-6 pt-6 border-t border-white/5 space-y-4"
+                >
+                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Extracted Clauses ({extractedClauses.length})</h4>
+                   <div className="max-h-64 overflow-y-auto pr-4 custom-scrollbar space-y-3">
+                      {extractedClauses.map((c, i) => (
+                        <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                           <div className="flex items-center gap-3 mb-2">
+                             <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-black">
+                               {c.clause_number}
+                             </div>
+                             <span className="font-bold text-slate-200 text-sm">{c.clause_title}</span>
+                           </div>
+                           <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                             {c.clause_text}
+                           </p>
+                        </div>
+                      ))}
+                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+         </motion.div>
       </div>
 
       {/* Agent Workflow Section - KEPT AS REQUESTED */}
