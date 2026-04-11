@@ -21,10 +21,13 @@ load_dotenv()
 
 app = FastAPI(title="LegalEase AI Backend")
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "https://legaleaseaiagent.vercel.app", 
+        "https://legalease-ai-agent.onrender.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

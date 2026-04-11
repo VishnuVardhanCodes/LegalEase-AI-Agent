@@ -31,20 +31,20 @@ const UploadPage = ({ onAnalysisComplete }) => {
     setExtractedClauses(null);
     try {
       // 1. Classify
-      const classRes = await axios.post('http://localhost:8000/api/classify', {
+      const classRes = await axios.post('https://legalease-ai-agent.onrender.com/api/classify', {
         text: textToClassify
       });
       setClassificationResult(classRes.data);
       
       // 2. Extract Clauses
-      const extractRes = await axios.post('http://localhost:8000/api/extract', {
+      const extractRes = await axios.post('https://legalease-ai-agent.onrender.com/api/extract', {
         document_type: classRes.data.document_type,
         text: textToClassify
       });
       const basicClauses = extractRes.data.clauses;
 
       // 3. Risk Analysis
-      const riskRes = await axios.post('http://localhost:8000/api/analyze_risk', {
+      const riskRes = await axios.post('https://legalease-ai-agent.onrender.com/api/analyze_risk', {
         document_type: classRes.data.document_type,
         clauses: basicClauses
       });
@@ -57,7 +57,7 @@ const UploadPage = ({ onAnalysisComplete }) => {
       });
 
       // 4. Simplify
-      const simpRes = await axios.post('http://localhost:8000/api/simplify_clauses', {
+      const simpRes = await axios.post('https://legalease-ai-agent.onrender.com/api/simplify_clauses', {
         clauses: combinedForSimplify
       });
       const simpMapped = simpRes.data.simplified_clauses || [];
@@ -131,7 +131,7 @@ const UploadPage = ({ onAnalysisComplete }) => {
     formData.append('target_language', language);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/analyze', formData, {
+      const response = await axios.post('https://legalease-ai-agent.onrender.com/api/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onAnalysisComplete(response.data);

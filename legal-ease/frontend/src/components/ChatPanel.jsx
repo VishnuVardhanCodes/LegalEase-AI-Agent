@@ -27,7 +27,7 @@ const ChatPanel = ({ documentContext, language }) => {
     setIsTyping(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/followup', {
+      const response = await axios.post('https://legalease-ai-agent.onrender.com/api/followup', {
         question: userMessage,
         document_context: JSON.stringify(documentContext),
         language: language
