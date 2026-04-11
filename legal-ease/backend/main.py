@@ -154,10 +154,85 @@ async def analyze_document(
         logger.error(f"Unexpected error during analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+FOLLOWUP_SYSTEM_PROMPT = """
+You are an intelligent legal assistant.
+
+You help users understand legal documents by answering their questions.
+
+You will receive:
+1. The full document text
+2. Extracted clauses
+3. Risk analysis
+4. Simplified explanations
+5. A user question
+
+Instructions:
+- Answer based only on the document.
+- Use simple, friendly language.
+- Explain clearly.
+- Reference clause numbers if possible.
+- Warn users if a clause is risky.
+- Suggest safe actions when needed.
+
+Examples of questions:
+"What does clause 5 mean?"
+"Which clauses are risky?"
+"Is this safe to sign?"
+"Can I negotiate this clause?"
+
+If user asks about a clause:
+- Explain it simply.
+- Mention risks if present.
+
+If user asks general safety:
+- Use trust score logic.
+- Highlight risky clauses.
+
+Keep answers:
+- Short
+- Clear
+- Practical
+
+Return output ONLY in JSON.
+
+Output format:
+{
+ "answer": "Clear explanation here."
+}
+"""
+
+def followup_with_groq(data_json: str, question: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": FOLLOWUP_SYSTEM_PROMPT},
+                {"role": "user", "content": f"Document Context Data:\n{data_json}\n\nUser Question:\n{question}"}
+            ],
+            temperature=0.3, # slightly higher for natural chat
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in followup chat: {e}")
+        return None
+
 @app.post("/api/followup")
 async def follow_up(request: FollowUpRequest):
     logger.info(f"Follow-up question: {request.question}")
     
+    # Try using Groq
+    client = get_groq_client()
+    if client:
+        logger.info("Using Groq API for Chat Assistant")
+        # In a real app we'd pass the actual document state, but using the prompt rules here
+        result = followup_with_groq(request.document_context, request.question)
+        if result and "answer" in result:
+            return {"status": "success", "answer": result["answer"]}
+            
+    # Fallback simulated response
     response_text = f"Based on the {request.language} context of the document, {request.question} is an important point. "
     if "risk" in request.question.lower():
         response_text += "The primary risks identified involve the termination notice period and the liability limitations."
@@ -721,6 +796,98 @@ async def translate_document(request: TranslateRequest):
             } for c in request.clauses
         ]
     }
+
+FORMATTER_SYSTEM_PROMPT = """
+You are a response formatter for a legal AI assistant.
+
+Your task is to combine outputs from multiple processing steps into one clean structured JSON.
+
+You will receive:
+- Document type
+- Extracted clauses
+- Risk analysis
+- Simplified explanations
+- Trust score
+- Overall assessment
+- Summary advice
+- Translated clauses
+- Chat answer
+
+Instructions:
+- Combine all fields into one final JSON.
+- Maintain structure consistency.
+- Do not modify content.
+- Do not summarize again.
+- Only organize data.
+
+Return output ONLY in JSON.
+
+Output format:
+{{
+ "document_type": "",
+ "trust_score": 0,
+ "overall_assessment": "",
+ "summary_advice": "",
+ "clauses": [],
+ "risk_analysis": [],
+ "simplified_clauses": [],
+ "translated_clauses": [],
+ "chat_answer": ""
+}}
+"""
+
+def format_response_with_groq(data_json: str) -> dict:
+    client = get_groq_client()
+    if not client: return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": FORMATTER_SYSTEM_PROMPT},
+                {"role": "user", "content": data_json}
+            ],
+            temperature=0.0,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error in formatting: {e}")
+        return None
+
+class FormatRequest(BaseModel):
+    document_type: str = ""
+    extracted_clauses: list = []
+    risk_analysis: list = []
+    simplified_explanations: list = []
+    trust_score: int = 0
+    overall_assessment: str = ""
+    summary_advice: str = ""
+    translated_clauses: list = []
+    chat_answer: str = ""
+
+@app.post("/api/format_response")
+async def format_response(request: FormatRequest):
+    logger.info("Formatting response payload into unified JSON.")
+    
+    client = get_groq_client()
+    if client:
+        result = format_response_with_groq(request.model_dump_json())
+        if result:
+            return result
+            
+    # Fallback basic combination
+    return {
+        "document_type": request.document_type,
+        "trust_score": request.trust_score,
+        "overall_assessment": request.overall_assessment,
+        "summary_advice": request.summary_advice,
+        "clauses": request.extracted_clauses,
+        "risk_analysis": request.risk_analysis,
+        "simplified_clauses": request.simplified_explanations,
+        "translated_clauses": request.translated_clauses,
+        "chat_answer": request.chat_answer
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
