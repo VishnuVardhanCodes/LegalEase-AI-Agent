@@ -1,107 +1,70 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Shield, AlertCircle, CheckCircle } from 'lucide-react';
 
 const TrustScoreMeter = ({ score }) => {
-  const getColor = (s) => {
-    if (s <= 40) return '#ef4444'; // Red
-    if (s <= 65) return '#f59e0b'; // Orange
-    return '#10b981'; // Green
+  const getScoreColor = (s) => {
+    if (s >= 75) return { color: '#10b981', text: 'HIGH TRUST', icon: <CheckCircle className="w-6 h-6" /> };
+    if (s >= 40) return { color: '#f59e0b', text: 'MODERATE RISK', icon: <AlertCircle className="w-6 h-6" /> };
+    return { color: '#ef4444', text: 'HIGH RISK', icon: <Shield className="w-6 h-6" /> };
   };
 
-  const getLabel = (s) => {
-    if (s <= 40) return 'CRITICAL RISK';
-    if (s <= 65) return 'MODERATE CAUTION';
-    return 'HIGHLY SECURE';
-  };
-
-  const color = getColor(score);
-  const label = getLabel(score);
-  
-  const size = 260;
-  const strokeWidth = 12;
-  const center = size / 2;
-  const radius = (size - strokeWidth * 4) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const { color, text, icon } = getScoreColor(score);
+  const percentage = score;
+  const strokeDasharray = 251.2; // 2 * PI * 40
+  const offset = strokeDasharray - (percentage / 100) * strokeDasharray;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <div className="relative" style={{ width: size, height: size }}>
-        
-        {/* Background Radial Glow */}
-        <div 
-          className="absolute inset-4 rounded-full opacity-10 blur-3xl transition-colors duration-1000"
-          style={{ backgroundColor: color }}
-        />
-
-        {/* Circular SVG */}
-        <svg width={size} height={size} className="transform -rotate-90 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-          {/* Track */}
+    <div className="flex flex-col items-center">
+      <div className="relative w-48 h-48 flex items-center justify-center">
+        {/* Background Circle */}
+        <svg className="w-full h-full -rotate-90">
           <circle
-            cx={center}
-            cy={center}
-            r={radius}
+            cx="96"
+            cy="96"
+            r="80"
+            stroke="currentColor"
+            strokeWidth="12"
             fill="transparent"
-            stroke="rgba(255,255,255,0.03)"
-            strokeWidth={strokeWidth}
+            className="text-white/5"
           />
-          
-          {/* Progress Segment */}
+          {/* Progress Circle */}
           <motion.circle
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="transparent"
+            cx="96"
+            cy="96"
+            r="80"
             stroke={color}
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
+            strokeWidth="12"
+            fill="transparent"
+            strokeDasharray={strokeDasharray}
+            initial={{ strokeDashoffset: strokeDasharray }}
             animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 2, ease: "circOut" }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
             strokeLinecap="round"
-            className="drop-shadow-lg"
-            style={{ filter: `drop-shadow(0 0 8px ${color}80)` }}
           />
-          
-          {/* Knobs/Markers */}
-          {[...Array(8)].map((_, i) => (
-             <circle 
-                key={i}
-                cx={center + radius * Math.cos(i * 45 * Math.PI / 180)}
-                cy={center + radius * Math.sin(i * 45 * Math.PI / 180)}
-                r="1.5"
-                fill="rgba(255,255,255,0.1)"
-             />
-          ))}
         </svg>
-        
+
         {/* Center Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <motion.div
+        <div className="absolute flex flex-col items-center">
+          <motion.span 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, type: 'spring' }}
-            className="relative"
+            className="text-5xl font-black text-white"
           >
-            <span className="text-7xl font-black text-white tracking-tighter block leading-none">
-              {score}
-            </span>
-            <div className="absolute -top-4 -right-4 w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-500 border border-white/5">
-              / 100
-            </div>
-          </motion.div>
-          
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="text-[10px] font-black tracking-[0.3em] uppercase mt-4 px-3 py-1 bg-white/5 rounded-full border border-white/5"
-            style={{ color }}
-          >
-            {label}
-          </motion.p>
+            {score}
+          </motion.span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Trust Score</span>
         </div>
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-6 flex items-center gap-3 px-4 py-2 rounded-full border border-white/5 bg-white/[0.02]"
+      >
+        <div style={{ color }}>{icon}</div>
+        <span className="text-sm font-black tracking-widest" style={{ color }}>{text}</span>
+      </motion.div>
     </div>
   );
 };

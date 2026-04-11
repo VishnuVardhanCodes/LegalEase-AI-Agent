@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Sparkles, MessageSquare, Zap, Target } from 'lucide-react';
+import { Send, Bot, User, Sparkles, MessageSquare, Zap, Target, Mic, Shield } from 'lucide-react';
 import axios from 'axios';
 
 const ChatPanel = ({ documentContext, language }) => {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Doc Intelligence active. I\'ve analyzed the agreement metrics. How can I assist with specific clauses or risk mitigation?' }
+    { role: 'assistant', content: 'Agent Intelligence active. How can I help you analyze this legal agreement?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -35,130 +35,110 @@ const ChatPanel = ({ documentContext, language }) => {
 
       setMessages(prev => [...prev, { role: 'assistant', content: response.data.answer }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "System offline. Failed to reach doc-intelligence agent." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Failed to connect to AI agent. Please ensure the backend is active." }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   const suggestedQuestions = [
-    "What is the biggest risk?",
+    "Identify red flags",
     "Explain Clause 5",
-    "Is this safe to sign?"
+    "Summary in 2 sentences"
   ];
 
   return (
-    <div className="glass-card rounded-[40px] h-full flex flex-col overflow-hidden relative border border-white/10 shadow-2xl">
-      {/* Dynamic Header */}
-      <div className="p-8 border-b border-white/5 bg-white/[0.02] relative z-10">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-             <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-20 animate-pulse" />
-             <div className="w-14 h-14 rounded-2xl bg-[#0c0c12] border border-emerald-500/20 flex items-center justify-center relative z-10">
-                <Bot className="text-emerald-400" size={28} />
-             </div>
-          </div>
-          <div>
-            <h3 className="font-black text-white text-lg tracking-tight">Legal AI Agent</h3>
-            <div className="flex items-center gap-2 mt-1">
-               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-               <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
-            </div>
-          </div>
+    <div className="bg-[#0c0c12]/80 h-full flex flex-col relative overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                 <Bot size={24} />
+              </div>
+              <div>
+                 <h4 className="text-sm font-black text-white uppercase tracking-widest">Legal AI</h4>
+                 <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Active</span>
+                 </div>
+              </div>
+           </div>
+           <div className="p-2 rounded-xl bg-white/5 text-slate-500">
+              <Shield size={16} />
+           </div>
         </div>
       </div>
 
-      {/* Message Area */}
+      {/* Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth z-10 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"
       >
-        {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className="flex items-start gap-4 max-w-[90%]">
-               {msg.role === 'assistant' && (
-                 <div className="w-8 h-8 rounded-[10px] bg-white/5 border border-white/5 flex items-center justify-center shrink-0 mt-1">
-                    <Zap size={14} className="text-primary-light" />
-                 </div>
-               )}
-               
-               <div className={`
-                p-5 rounded-[28px] relative
+        <AnimatePresence>
+          {messages.map((msg, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`
+                max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed
                 ${msg.role === 'user' 
-                  ? 'bg-primary text-white rounded-tr-none shadow-[0_10px_20px_rgba(139,92,246,0.3)]' 
-                  : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none font-medium'
+                  ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg' 
+                  : 'bg-white/5 text-slate-300 rounded-tl-none border border-white/10'
                 }
               `}>
-                <p className="text-sm leading-relaxed">{msg.content}</p>
-                {msg.role === 'user' && (
-                   <div className="mt-2 text-[8px] font-black text-white/40 uppercase tracking-widest text-right">User Identity Verified</div>
-                )}
+                {msg.content}
               </div>
-
-               {msg.role === 'user' && (
-                 <div className="w-8 h-8 rounded-[10px] bg-primary-light/20 border border-primary-light/20 flex items-center justify-center shrink-0 mt-1">
-                    <User size={14} className="text-white" />
-                 </div>
-               )}
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
         {isTyping && (
-          <div className="flex justify-start gap-4">
-            <div className="w-8 h-8 rounded-[10px] bg-white/5 shrink-0" />
-            <div className="bg-white/5 px-6 py-4 rounded-[28px] rounded-tl-none border border-white/5">
-              <div className="flex gap-2">
-                <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1.5 h-1.5 bg-primary-light rounded-full animate-bounce [animation-delay:0.4s]"></span>
-              </div>
-            </div>
-          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+             <div className="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/10">
+                <div className="flex gap-1.5">
+                   <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                   <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                   <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+             </div>
+          </motion.div>
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-8 bg-black/20 border-t border-white/5 z-10 backdrop-blur-md">
-        <div className="flex flex-wrap gap-2 mb-6 justify-center">
+      {/* Input */}
+      <div className="p-6 bg-[#0c0c12] border-t border-white/5">
+        <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
           {suggestedQuestions.map((q, i) => (
-            <motion.button
+            <button
               key={i}
-              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)' }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { setInput(q); }}
-              className="text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2.5 rounded-full bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-all shadow-sm"
+              onClick={() => setInput(q)}
+              className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 whitespace-nowrap hover:bg-white/10 hover:text-white transition-all"
             >
               {q}
-            </motion.button>
+            </button>
           ))}
         </div>
         
-        <form onSubmit={handleSend} className="relative group">
-          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary-light to-transparent opacity-30 group-focus-within:opacity-100 transition-opacity" />
+        <form onSubmit={handleSend} className="relative">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Query the AI Agent..."
-            className="w-full bg-white/[0.03] border border-white/10 rounded-[28px] px-8 py-5 text-sm font-medium text-white focus:outline-none focus:border-primary/50 transition-all pr-16 placeholder:text-slate-600 shadow-inner group-hover:bg-white/[0.05]"
+            placeholder="Ask anything about the agreement..."
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all"
           />
           <button
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-primary flex items-center justify-center hover:bg-primary-dark transition-all disabled:opacity-50 shadow-lg text-white group-hover:scale-105"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white hover:bg-indigo-600 transition-all disabled:opacity-50"
           >
-            <Send size={20} />
+            <Send size={18} />
           </button>
         </form>
       </div>
-
-      {/* Decorative Grid In Chat */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
     </div>
   );
 };

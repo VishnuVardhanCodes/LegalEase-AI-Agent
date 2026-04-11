@@ -1,36 +1,39 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, AlertTriangle, AlertCircle, CheckCircle, MessageSquare, Info, ShieldAlert } from 'lucide-react';
+import { 
+  ChevronDown, AlertTriangle, AlertCircle, CheckCircle, 
+  MessageSquare, Info, ShieldAlert, Zap, Lightbulb
+} from 'lucide-react';
 
-const ClauseCard = ({ clause, onAskAbout }) => {
+const ClauseCard = ({ clause }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getRiskStyles = (level) => {
     switch(level.toUpperCase()) {
       case 'RISKY':
         return { 
-          border: 'border-l-risk-high', 
-          bg: 'bg-risk-high/10', 
-          text: 'text-risk-high', 
-          glow: 'shadow-[0_0_15px_rgba(239,68,68,0.2)]',
-          icon: <ShieldAlert className="w-4 h-4 text-risk-high" /> 
+          border: 'border-l-red-500', 
+          bg: 'bg-red-500/10', 
+          text: 'text-red-400', 
+          badge: 'bg-red-500/20 text-red-500',
+          icon: <ShieldAlert className="w-4 h-4 text-red-500" /> 
         };
       case 'CAUTION':
         return { 
-          border: 'border-l-risk-medium', 
-          bg: 'bg-risk-medium/10', 
-          text: 'text-risk-medium', 
-          glow: 'shadow-[0_0_15px_rgba(245,158,11,0.2)]',
-          icon: <AlertCircle className="w-4 h-4 text-risk-medium" /> 
+          border: 'border-l-amber-500', 
+          bg: 'bg-amber-500/10', 
+          text: 'text-amber-400', 
+          badge: 'bg-amber-500/20 text-amber-500',
+          icon: <AlertCircle className="w-4 h-4 text-amber-500" /> 
         };
       case 'SAFE':
-        default:
+      default:
         return { 
-          border: 'border-l-risk-low', 
-          bg: 'bg-risk-low/10', 
-          text: 'text-risk-low', 
-          glow: 'shadow-[0_0_15px_rgba(16,185,129,0.2)]',
-          icon: <CheckCircle className="w-4 h-4 text-risk-low" /> 
+          border: 'border-l-emerald-500', 
+          bg: 'bg-emerald-500/10', 
+          text: 'text-emerald-400', 
+          badge: 'bg-emerald-500/20 text-emerald-500',
+          icon: <CheckCircle className="w-4 h-4 text-emerald-500" /> 
         };
     }
   };
@@ -40,7 +43,7 @@ const ClauseCard = ({ clause, onAskAbout }) => {
   return (
     <motion.div 
       layout
-      className={`glass-card rounded-[24px] border-l-[4px] ${styles.border} ${styles.glow} mb-4 overflow-hidden group transition-all duration-300 hover:border-l-[8px]`}
+      className={`glass-card rounded-[24px] border-l-[4px] ${styles.border} mb-4 overflow-hidden group transition-all duration-300`}
     >
       <div 
         className="p-6 flex items-center justify-between cursor-pointer hover:bg-white/[0.03] transition-colors"
@@ -53,9 +56,8 @@ const ClauseCard = ({ clause, onAskAbout }) => {
           </div>
           <div>
             <h4 className="font-bold text-slate-100 text-base group-hover:text-white transition-colors">{clause.title}</h4>
-            <div className={`flex items-center gap-2 mt-1 text-[9px] font-black uppercase tracking-[0.2em] ${styles.text}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-              {clause.risk_level} ASSESSMENT
+            <div className={`flex items-center gap-2 mt-1 py-1 px-3 rounded-full text-[9px] font-black uppercase tracking-[0.2em] w-fit ${styles.badge}`}>
+              {clause.risk_level}
             </div>
           </div>
         </div>
@@ -79,60 +81,72 @@ const ClauseCard = ({ clause, onAskAbout }) => {
             <div className="px-6 pb-6 pt-2 space-y-6">
               <div className="h-px w-full bg-white/5" />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 {/* Plain English Explanation */}
-                 <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                       <MessageSquare className="w-3 h-3 text-primary-light" />
-                       <p className="text-[10px] text-primary-light uppercase tracking-widest font-black">Plain Language Summary</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 {/* Plain Language Summary */}
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
+                          <MessageSquare size={16} />
+                       </div>
+                       <p className="text-[10px] text-white uppercase tracking-widest font-black">Plain Language Summary</p>
                     </div>
-                    <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10">
-                      <p className="text-sm text-slate-200 leading-relaxed font-medium">
+                    <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
+                      <p className="text-sm text-slate-300 leading-relaxed font-medium">
                         {clause.plain_english}
                       </p>
                     </div>
                  </div>
 
-                 {/* Risk Reason */}
-                 <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                       <Info className="w-3 h-3 text-slate-400" />
-                       <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Why the assessment?</p>
+                 {/* Why It Matters */}
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+                          <Info size={16} />
+                       </div>
+                       <p className="text-[10px] text-white uppercase tracking-widest font-black">Why It Matters</p>
                     </div>
-                    <div className={`p-5 rounded-3xl ${styles.bg} border border-white/5`}>
+                    <div className={`p-6 rounded-3xl ${styles.bg} border border-white/5`}>
                       <p className="text-sm text-slate-300 leading-relaxed italic">
-                        {clause.risk_reason}
+                        {clause.risk_reason || "No significant issues found."}
                       </p>
                     </div>
                  </div>
               </div>
 
+              {/* Suggested Action */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-indigo-500 text-white shadow-lg">
+                        <Zap size={16} />
+                    </div>
+                    <p className="text-[10px] text-white uppercase tracking-widest font-black">Suggested Action</p>
+                </div>
+                <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/20 relative group">
+                    <div className="absolute -top-3 left-6 px-3 py-1 bg-indigo-500 rounded-full text-[8px] font-black text-white uppercase tracking-widest">
+                        AI Recommended
+                    </div>
+                    <p className="text-xs text-indigo-200 font-bold leading-relaxed">
+                        {clause.risk_level === 'RISKY' 
+                          ? "Negotiate to reduce scope or remove this clause entirely before signing."
+                          : clause.risk_level === 'CAUTION'
+                          ? "Review this section with legal counsel to clarify exact implications."
+                          : "This clause is standard. Proceed with confidence."}
+                    </p>
+                </div>
+              </div>
+
               {/* Original Text Snippet */}
               {clause.original_text && (
-                 <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="relative p-5 rounded-2xl bg-[#000]/40 border border-white/5"
-                 >
-                    <div className="absolute top-3 right-4 flex items-center gap-2 opacity-30">
-                       <span className="text-[8px] font-bold uppercase tracking-widest">Legal Source</span>
+                 <div className="relative p-5 rounded-2xl bg-black/40 border border-white/5">
+                    <div className="flex items-center gap-2 mb-3 opacity-30">
+                       <ScrollText size={12} />
+                       <span className="text-[8px] font-bold uppercase tracking-widest">Original Legal Text</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed font-mono">
                       {clause.original_text}
                     </p>
-                 </motion.div>
+                 </div>
               )}
-
-              <div className="flex justify-end pt-2">
-                 <motion.button
-                   whileHover={{ scale: 1.05, x: 5 }}
-                   whileTap={{ scale: 0.95 }}
-                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-primary-light uppercase tracking-widest hover:text-white hover:bg-primary transition-all shadow-sm"
-                 >
-                   Deep Dive Assistant
-                   <ChevronDown size={12} className="-rotate-90" />
-                 </motion.button>
-              </div>
             </div>
           </motion.div>
         )}

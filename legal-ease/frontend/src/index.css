@@ -3,13 +3,17 @@
 @theme {
   --color-background: #050508;
   --color-surface: rgba(255, 255, 255, 0.03);
-  --color-primary: #8b5cf6;
-  --color-primary-light: #a78bfa;
-  --color-primary-dark: #7c3aed;
-  --color-secondary: #3b82f6;
+  --color-primary: #6366F1;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #4f46e5;
+  --color-secondary: #0ea5e9;
   --color-risk-high: #ef4444;
   --color-risk-medium: #f59e0b;
   --color-risk-low: #10b981;
+
+  /* Accessibility Variables */
+  --font-size-base: 16px;
+  --contrast-ratio: 1;
 
   --animate-glow-pulse: glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 6s ease-in-out infinite;
@@ -37,11 +41,25 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #050508;
+  background-color: var(--color-background);
   color: #f1f5f9;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--font-size-base);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light-mode {
+  --color-background: #f8fafc;
+  color: #0f172a;
+}
+
+body.high-contrast {
+  --color-primary: #0000ff;
+  --color-primary-light: #5555ff;
+  --color-risk-high: #ff0000;
+  --color-risk-low: #008000;
 }
 
 /* Premium Glassmorphism */
