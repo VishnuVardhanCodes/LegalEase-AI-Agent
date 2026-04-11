@@ -7,6 +7,9 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import io
+import PyPDF2
+from groq import Groq
 
 from supervity_service import SupervityService
 
@@ -40,6 +43,75 @@ class FollowUpRequest(BaseModel):
 async def health_check():
     return {"status": "ok"}
 
+def get_groq_client():
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+    return Groq(api_key=api_key)
+
+def extract_text_from_pdf(content: bytes) -> str:
+    try:
+        reader = PyPDF2.PdfReader(io.BytesIO(content))
+        text = ""
+        for i in range(min(5, len(reader.pages))): 
+            text += reader.pages[i].extract_text()
+        return text
+    except Exception as e:
+        logger.error(f"Failed to read PDF: {e}")
+        return ""
+
+CLASSIFY_SYSTEM_PROMPT = """
+You are a legal document classification expert.
+
+Your job is to identify the type of legal document based on the text provided.
+
+Analyze the text and classify it into ONE of the following categories:
+1. Rental Agreement
+2. Job Offer Letter
+3. Loan Agreement
+4. NDA (Non-Disclosure Agreement)
+5. Vendor Contract
+6. Employment Contract
+7. Service Agreement
+8. Other
+
+Rules:
+- Carefully analyze headings, structure, keywords, and legal terms.
+- Look for words like:
+   "Landlord", "Tenant" -> Rental Agreement
+   "Employer", "Salary", "Joining Date" -> Job Offer
+   "Loan Amount", "Interest Rate" -> Loan Agreement
+   "Confidentiality", "Disclosure" -> NDA
+   "Vendor", "Services" -> Vendor Contract
+   
+Return output ONLY in JSON format.
+
+Output format:
+{
+ "document_type": "Rental Agreement",
+ "confidence": 0.95
+}
+"""
+
+def classify_text_with_groq(text: str) -> dict:
+    client = get_groq_client()
+    if not client:
+        return None
+    try:
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": CLASSIFY_SYSTEM_PROMPT},
+                {"role": "user", "content": text[:8000]}
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(completion.choices[0].message.content)
+    except Exception as e:
+        logger.error(f"Groq API Error: {e}")
+        return None
+
 @app.post("/api/analyze")
 async def analyze_document(
     document_file: UploadFile = File(...),
@@ -48,10 +120,14 @@ async def analyze_document(
     logger.info(f"Analyzing document: {document_file.filename} in {target_language}")
     
     try:
-        # Read file content
         content = await document_file.read()
         
-        # Use Supervity Service
+        # Extract text using PyPDF2 if it's a PDF
+        extracted_text = ""
+        if document_file.filename.lower().endswith(".pdf"):
+            extracted_text = extract_text_from_pdf(content)
+        
+        # Send to Supervity Service (Main flow)
         result_json = await supervity_service.analyze_document(
             file_content=content,
             filename=document_file.filename,
@@ -62,35 +138,33 @@ async def analyze_document(
         if "status" in result_json and result_json["status"] == "error":
             raise HTTPException(status_code=500, detail=result_json.get("message", "AI Agent error"))
             
+        # Enhance result with our GROQ specific classifier rules if we got text
+        if extracted_text:
+            logger.info("Using Groq API to classify the uploaded PDF text...")
+            groq_res = classify_text_with_groq(extracted_text)
+            if groq_res and "document_type" in groq_res:
+                result_json["document_type"] = groq_res["document_type"]
+                result_json["confidence"] = groq_res.get("confidence", 0.95)
+            
         return result_json
 
     except HTTPException as he:
         raise he
     except Exception as e:
-        logger.exception("Unexpected error during analysis")
+        logger.error(f"Unexpected error during analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/followup")
 async def follow_up(request: FollowUpRequest):
     logger.info(f"Follow-up question: {request.question}")
     
-    # In a real scenario, this would likely call another workflow or a LLM directly.
-    # For the demo, we'll simulate a response based on the question.
-    
-    # Simulated response logic
     response_text = f"Based on the {request.language} context of the document, {request.question} is an important point. "
-    
     if "risk" in request.question.lower():
-        response_text += "The primary risks identified involve the termination notice period and the liability limitations in Clause 8."
-    elif "safe" in request.question.lower():
-        response_text += "The document is generally standard, but ensures you verify the insurance requirements before signing."
+        response_text += "The primary risks identified involve the termination notice period and the liability limitations."
     else:
         response_text += "This clause specifies the standard operating procedures and legal jurisdiction governing this agreement."
 
-    return {
-        "status": "success",
-        "answer": response_text
-    }
+    return {"status": "success", "answer": response_text}
 
 class ClassifyRequest(BaseModel):
     text: str
@@ -99,43 +173,18 @@ class ClassifyRequest(BaseModel):
 async def classify_document(request: ClassifyRequest):
     logger.info("Classifying document type based on provided text.")
     
-    # System Prompt as requested
-    system_prompt = """
-    You are a legal document classification expert.
-    
-    Your job is to identify the type of legal document based on the text provided.
-    
-    Analyze the text and classify it into ONE of the following categories:
-    1. Rental Agreement
-    2. Job Offer Letter
-    3. Loan Agreement
-    4. NDA (Non-Disclosure Agreement)
-    5. Vendor Contract
-    6. Employment Contract
-    7. Service Agreement
-    8. Other
-    
-    Rules:
-    - Carefully analyze headings, structure, keywords, and legal terms.
-    - Look for words like:
-       "Landlord", "Tenant" -> Rental Agreement
-       "Employer", "Salary", "Joining Date" -> Job Offer
-       "Loan Amount", "Interest Rate" -> Loan Agreement
-       "Confidentiality", "Disclosure" -> NDA
-       "Vendor", "Services" -> Vendor Contract
-       
-    Return output ONLY in JSON format.
-    
-    Output format:
-    {
-     "document_type": "Rental Agreement",
-     "confidence": 0.95
-    }
-    """
-    
     text = request.text.lower()
     
-    # Simulated fast LLM logic using exact keyword matching instructions
+    # Try using Groq API 
+    client = get_groq_client()
+    if client:
+        logger.info("Using real Groq API for Quick Classification")
+        groq_res = classify_text_with_groq(text)
+        if groq_res:
+            return groq_res
+            
+    # Fallback simulated logic if API key missing
+    logger.info("Falling back to simulated classification")
     if "landlord" in text or "tenant" in text:
         return {"document_type": "Rental Agreement", "confidence": 0.95}
     elif "employer" in text and ("salary" in text or "joining date" in text):
