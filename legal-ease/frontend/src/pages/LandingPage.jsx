@@ -75,11 +75,11 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.1]"
+              className="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.2]"
             >
-              Understand Legal <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-400 bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_0_20px_rgba(99,102,241,0.2)]">Documents</span> <br/>
-              Before You Sign.
+              <span className="block whitespace-nowrap">Understand Legal</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-400 bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_0_20px_rgba(99,102,241,0.2)] block">Documents</span>
+              <span className="block whitespace-nowrap">Before You Sign.</span>
             </motion.h1>
 
             <div className="space-y-6">
@@ -87,7 +87,7 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-lg md:text-xl text-slate-400/90 font-medium leading-relaxed max-w-xl"
+                className="text-lg md:text-xl text-slate-400/90 font-medium leading-relaxed whitespace-nowrap"
               >
                 Upload any legal agreement and get a <span className="text-white border-b-2 border-indigo-500/30">plain-language summary</span> instantly.
               </motion.p>
@@ -138,40 +138,42 @@ const LandingPage = () => {
               ))}
             </motion.div>
           </div>
+
           <div className="hidden lg:block relative">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="relative relative h-[500px] w-full flex items-center justify-center p-8"
+              className="relative h-[600px] w-full flex items-center justify-center p-4"
             >
-              {/* Background Glow for Image */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 bg-indigo-500/20 blur-[100px] rounded-full"></div>
+              {/* Massive Backdrop Glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 blur-[120px] rounded-full"></div>
               
               <motion.img 
                 src="https://file.aiquickdraw.com/imgcompressed/img/compressed_e8789e2659e72987c2525127f1cb0541.webp"
                 alt="AI Legal Assistant"
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative z-10 w-full max-w-lg object-contain drop-shadow-[0_20px_50px_rgba(79,70,229,0.3)] rounded-[2.5rem]"
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="relative z-10 w-full max-w-lg object-contain drop-shadow-[0_20px_50px_rgba(79,70,229,0.4)] transition-transform duration-700"
               />
 
-              {/* Decorative floating labels to maintain the "analyzing" vibe */}
+              {/* Enhanced Labels */}
               <motion.div 
-                animate={{ x: [0, 10, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="absolute top-12 right-12 p-3 bg-white/5 border border-white/10 backdrop-blur-md rounded-xl text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2"
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-10 right-0 p-4 bg-black/40 border border-white/10 backdrop-blur-xl rounded-2xl text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-3 shadow-2xl z-20"
               >
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
-                Analyzing Clauses
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
+                Analyzing Clauses...
               </motion.div>
+              
               <motion.div 
-                animate={{ x: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-                className="absolute bottom-12 left-12 p-3 bg-white/5 border border-white/10 backdrop-blur-md rounded-xl text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2"
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-10 left-0 p-4 bg-black/40 border border-white/10 backdrop-blur-xl rounded-2xl text-[11px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-3 shadow-2xl z-20"
               >
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                Trust Score Ready
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                98% Accuracy
               </motion.div>
             </motion.div>
           </div>
