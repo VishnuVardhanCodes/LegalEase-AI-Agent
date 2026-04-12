@@ -1,13 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, Loader2, ShieldCheck, Sparkles, Shield } from 'lucide-react';
+import { Upload, FileText, Loader2, ShieldCheck, Sparkles, Shield, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { analyzeDocument } from '../api';
+import LanguageToggle from './LanguageToggle';
 
 const UploadSection = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [file, setFile] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState('EN');
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const selectedFile = acceptedFiles[0];
@@ -19,12 +21,12 @@ const UploadSection = ({ onUploadSuccess }) => {
 
     try {
       setUploadProgress(30);
-      const data = await analyzeDocument(selectedFile);
+      const data = await analyzeDocument(selectedFile, selectedLanguage);
       setUploadProgress(80);
       setUploadProgress(100);
       
       setTimeout(() => {
-        onUploadSuccess(data);
+        onUploadSuccess({ ...data, selectedLanguage });
         setIsUploading(false);
       }, 800);
 
@@ -33,7 +35,7 @@ const UploadSection = ({ onUploadSuccess }) => {
       setIsUploading(false);
       onUploadSuccess({ error: error.message || 'Analysis failed', details: error.toString() });
     }
-  }, [onUploadSuccess]);
+  }, [onUploadSuccess, selectedLanguage]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -42,11 +44,11 @@ const UploadSection = ({ onUploadSuccess }) => {
   });
 
   return (
-    <div className="max-w-3xl mx-auto py-20 px-4">
+    <div className="max-w-3xl mx-auto py-12 px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-20 space-y-6"
+        className="text-center mb-12 space-y-6"
       >
         <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-400 text-[10px] font-black tracking-[0.3em] uppercase backdrop-blur-md shadow-xl">
           <Sparkles className="h-4 w-4 animate-pulse" /> Agentic Neural Analysis
@@ -64,6 +66,25 @@ const UploadSection = ({ onUploadSuccess }) => {
           Upload any legal PDF and our <span className="text-slate-300">agentic intelligence</span> will extract, simplify, and audit every clause for <span className="text-indigo-400/80 italic">total legal transparency.</span>
         </p>
       </motion.div>
+
+      {/* Language Selection UI */}
+      {!isUploading && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-md mx-auto mb-10"
+        >
+          <div className="flex items-center gap-2 mb-3 px-2">
+            <Globe className="h-3 w-3 text-indigo-400" />
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Select Output Language</span>
+          </div>
+          <LanguageToggle 
+            currentLanguage={selectedLanguage} 
+            onLanguageChange={setSelectedLanguage} 
+          />
+        </motion.div>
+      )}
 
       <div 
         {...getRootProps()} 
@@ -85,13 +106,8 @@ const UploadSection = ({ onUploadSuccess }) => {
                   {isDragActive ? 'Release to Begin Audit' : 'Drop Legal PDF Here'}
                 </p>
                 <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">
-                  Secure processing • Local extraction • GPT-4o Class Intelligence
+                  Secure processing • Output: {selectedLanguage === 'EN' ? 'English' : selectedLanguage === 'HI' ? 'Hindi' : 'Telugu'}
                 </p>
-              </div>
-              <div className="pt-4">
-                <button className="px-8 py-3 bg-white/5 border border-white/10 rounded-xl text-xs font-black text-slate-300 uppercase tracking-widest group-hover:bg-white/10 transition-all">
-                  Browse Files
-                </button>
               </div>
             </>
           ) : (
@@ -111,7 +127,7 @@ const UploadSection = ({ onUploadSuccess }) => {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-xl font-black text-white italic">Processing "{file?.name}"</p>
-                  <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] animate-pulse">Running Neural Audit Engine...</p>
+                  <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] animate-pulse">Analyzing in {selectedLanguage === 'EN' ? 'English' : selectedLanguage === 'HI' ? 'Hindi' : 'Telugu'}...</p>
                 </div>
               </div>
 

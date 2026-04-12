@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 import pdfplumber
 import requests
 import os
@@ -18,10 +18,19 @@ def extract_text(file):
     return text
 
 @router.post("/analyze")
-async def analyze_document(file: UploadFile = File(...)):
+async def analyze_document(file: UploadFile = File(...), language: str = Form("EN")):
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+    
+    # Map language code to full name for the prompt
+    lang_map = {
+        "EN": "English",
+        "HI": "Hindi",
+        "TE": "Telugu"
+    }
+    target_language = lang_map.get(language, "English")
+
     try:
-        print(f"--- Starting Analysis for: {file.filename} ---")
+        print(f"--- Starting Analysis for: {file.filename} (Language: {target_language}) ---")
         document_text = extract_text(file)
         
         if not document_text:
@@ -32,23 +41,25 @@ You are LegalEase AI — an intelligent legal document analyzer.
 
 Analyze the following legal document.
 
+IMPORTANT: Your response (document_type, titles, explanations, and executive_summary) MUST be in {target_language}. Even though the input might be in English, the output analysis MUST be translated and explained in {target_language}.
+
 Steps:
 1 Detect document type  
 2 Extract clauses  
 3 Assign risk  
-4 Simplify clauses  
+4 Simplify clauses (Explain in {target_language})
 5 Calculate Trust Score  
-6 Generate summary  
+6 Generate summary (In {target_language})
 
 DOCUMENT TEXT:
 {document_text}
 
 Return ONLY JSON.
 
-Format:
+Format (But translate content to {target_language}):
 
 {{
- "document_type": "Rental Agreement",
+ "document_type": "Rental Agreement (Translated)",
  "trust_score": 95,
  "overall_risk": "SAFE",
  "risk_summary": {{
@@ -59,13 +70,13 @@ Format:
  "clauses": [
    {{
      "clause_number": 1,
-     "title": "Security Deposit",
+     "title": "Security Deposit (Translated)",
      "risk_level": "SAFE",
      "risk_score": 10,
-     "explanation": "You must pay one month's rent as deposit."
+     "explanation": "Explanation in {target_language}..."
    }}
  ],
- "executive_summary": "This contract is safe to sign."
+ "executive_summary": "Summary in {target_language}..."
 }}
 """
 
@@ -79,6 +90,10 @@ Format:
                 "model": "llama-3.3-70b-versatile",
                 "messages": [
                     {
+                        "role": "system",
+                        "content": f"You are a legal expert that responds exclusively in {target_language}."
+                    },
+                    {
                         "role": "user",
                         "content": prompt
                     }
@@ -90,20 +105,16 @@ Format:
 
         groq_data = response.json()
         
-        # DEBUGGING LOGS (TEMPORARY)
         print("Groq Response Status:", response.status_code)
         
         if "choices" not in groq_data:
             print("ERROR: Groq Response missing 'choices':", groq_data)
             return {"error": "Model response was invalid.", "details": groq_data.get("error", "Unknown error"), "status": "failed"}
 
-        # Extract message content properly
         content = groq_data["choices"][0]["message"]["content"]
-        
-        # Convert string JSON into actual JSON
         parsed_json = json.loads(content)
         
-        print("Analysis successful!")
+        print(f"Analysis successful in {target_language}!")
         return parsed_json
 
     except Exception as e:

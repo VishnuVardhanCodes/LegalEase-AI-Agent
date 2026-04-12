@@ -1,6 +1,7 @@
-export async function analyzeDocument(file) {
+export async function analyzeDocument(file, language = "EN") {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("language", language);
 
   try {
     const response = await fetch(
