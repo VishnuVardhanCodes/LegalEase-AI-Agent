@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Handshake, Activity, AlertTriangle, Globe, Building, Briefcase, FileSignature, Home } from 'lucide-react';
+import { Handshake, Activity, AlertTriangle, Globe, Building, Briefcase, FileSignature, Home, Zap, Shield, Search } from 'lucide-react';
 import { FaReact, FaPython, FaLinkedin, FaGithub, FaEnvelope } from 'react-icons/fa';
 import { SiTailwindcss, SiVite, SiFastapi, SiGithub, SiVercel, SiRender } from 'react-icons/si';
 import LogoLoop from './LogoLoop';
@@ -318,5 +318,79 @@ export const FooterConnect = () => {
         </div>
       </div>
     </footer>
+  );
+};
+export const WorkflowSection = () => {
+  const steps = [
+    { title: "INGEST", desc: "Secure PDF upload to isolated cloud vault.", icon: <Zap className="w-6 h-6" />, color: "from-orange-500 to-red-500", shadow: "shadow-orange-500/20" },
+    { title: "STRUCTURAL PARSE", desc: "AI detects clauses, headers, and parties.", icon: <Search className="w-6 h-6" />, color: "from-amber-500 to-orange-500", shadow: "shadow-amber-500/20" },
+    { title: "RISK SCANNING", icon: <Shield className="w-6 h-6" />, desc: "Agent identifies 50+ legal red flags.", color: "from-emerald-500 to-teal-500", shadow: "shadow-emerald-500/20" },
+    { title: "SIMPLIFICATION", desc: "Legalese translated to plain human language.", icon: <FileSignature className="w-6 h-6" />, color: "from-cyan-500 to-blue-500", shadow: "shadow-cyan-500/20" },
+    { title: "TRUST SCORING", desc: "Safety metrics and risk ratings calculated.", icon: <Activity className="w-6 h-6" />, color: "from-blue-500 to-indigo-500", shadow: "shadow-blue-500/20" },
+    { title: "CONSULTATION", desc: "Interactive AI follow-up for deep clarity.", icon: <Handshake className="w-6 h-6" />, color: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20" }
+  ];
+
+  return (
+    <section className="py-32 px-6 relative overflow-hidden bg-[#050508]/50">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-24 space-y-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-5xl md:text-6xl font-black text-white"
+          >
+            How Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Doc Intelligence</span> Works
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-lg text-slate-400 max-w-2xl mx-auto"
+          >
+            A multi-stage agentic workflow designed to turn complex legal text into actionable clarity.
+          </motion.p>
+        </div>
+
+        <div className="relative">
+          {/* Animated Connecting S-Curve Path */}
+          <svg className="absolute top-1/2 left-0 w-full h-24 -translate-y-1/2 hidden lg:block opacity-20" viewBox="0 0 1200 100" fill="none">
+            <motion.path
+              d="M0,50 C100,50 200,10 300,10 C400,10 500,90 600,90 C700,90 800,10 900,10 C1000,10 1100,50 1200,50"
+              stroke="white"
+              strokeWidth="2"
+              strokeDasharray="10 10"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              transition={{ duration: 3, ease: "linear", repeat: Infinity }}
+            />
+          </svg>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 relative z-10">
+            {steps.map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex flex-col items-center text-center group"
+              >
+                <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} p-[1px] mb-6 shadow-2xl ${step.shadow} group-hover:scale-110 transition-transform duration-500`}>
+                  <div className="w-full h-full bg-[#0F172A] rounded-2xl flex items-center justify-center text-white">
+                    {step.icon}
+                  </div>
+                </div>
+                <h3 className="text-xs font-black text-white tracking-widest mb-2 uppercase">{step.title}</h3>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed px-2 transition-colors group-hover:text-slate-300">
+                  {step.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };

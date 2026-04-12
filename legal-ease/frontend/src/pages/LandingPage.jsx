@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Sparkles, ChevronRight, FileCheck, Search, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { InnovativeFeatures, RealWorldImpact, TechStackSection, FooterConnect } from '../components/LandingSections';
+import { InnovativeFeatures, RealWorldImpact, TechStackSection, FooterConnect, WorkflowSection } from '../components/LandingSections';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -91,14 +91,14 @@ const LandingPage = () => {
               >
                 Upload any legal agreement and get a <span className="text-white border-b-2 border-indigo-500/30">plain-language summary</span> instantly.
               </motion.p>
-              <motion.p 
+              <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
                 className="text-sm md:text-base text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2"
               >
                 <div className="w-8 h-[1px] bg-slate-800"></div> AI-Driven Intelligence
-              </motion.p>
+              </motion.div>
             </div>
 
             <motion.div 
@@ -179,6 +179,9 @@ const LandingPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Workflow Section */}
+      <WorkflowSection />
 
       {/* Professional Sections */}
       <div className="relative z-10 space-y-0">
