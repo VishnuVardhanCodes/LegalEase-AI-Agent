@@ -33,13 +33,13 @@ class SupervityService:
             "x-source": "v1"
         }
         
-        # Multipart form-data fields
+        # Multipart form-data fields updated to match Supervity expected schema
         files = {
-            "inputs[document_file]": (filename, file_content, content_type)
+            "inputs[file]": (filename, file_content, content_type)
         }
         data = {
             "workflowId": self.WORKFLOW_ID,
-            "inputs[target_language]": target_language
+            "inputs[language]": target_language
         }
 
         logger.info(f"Calling Supervity API for file: {filename}")
@@ -86,3 +86,25 @@ class SupervityService:
             # If parsing fails, we might be getting raw text or a malformed JSON
             # In a real app, you'd handle specific workflow output formats here
             return {"status": "error", "message": "Failed to parse AI response", "raw": raw_text[:500]}
+
+    def analyze_document_background(self, file_content: bytes, filename: str, content_type: str, target_language: str = "English"):
+        import threading
+        import asyncio
+        
+        def background_task():
+            logger.info("Starting background Supervity execution thread.")
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                result = loop.run_until_complete(
+                    self.analyze_document(file_content, filename, content_type, target_language)
+                )
+                logger.info(f"Background Supervity execution finished. Result snippet: {str(result)[:200]}")
+            except Exception as e:
+                logger.error(f"Background Supervity execution failed: {str(e)}")
+            finally:
+                loop.close()
+
+        thread = threading.Thread(target=background_task)
+        thread.daemon = True
+        thread.start()

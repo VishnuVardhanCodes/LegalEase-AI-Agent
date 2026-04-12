@@ -11,13 +11,11 @@ import io
 import PyPDF2
 from groq import Groq
 
-from supervity_service import SupervityService
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# Load environment variables IMMEDIATELY
 load_dotenv()
+
+from supervity_service import SupervityService
+from routes.analyze import router as analyze_router
 
 app = FastAPI(title="LegalEase AI Backend")
 
@@ -35,6 +33,8 @@ app.add_middleware(
 
 # Initialize Supervity Service
 supervity_service = SupervityService()
+
+app.include_router(analyze_router, prefix="/api", tags=["Analysis"])
 
 
 class FollowUpRequest(BaseModel):
@@ -102,7 +102,7 @@ def classify_text_with_groq(text: str) -> dict:
         return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": CLASSIFY_SYSTEM_PROMPT},
                 {"role": "user", "content": text[:8000]}
@@ -115,47 +115,14 @@ def classify_text_with_groq(text: str) -> dict:
         logger.error(f"Groq API Error: {e}")
         return None
 
-@app.post("/api/analyze")
-async def analyze_document(
-    document_file: UploadFile = File(...),
-    target_language: str = Form("English")
-):
-    logger.info(f"Analyzing document: {document_file.filename} in {target_language}")
-    
-    try:
-        content = await document_file.read()
-        
-        # Extract text using PyPDF2 if it's a PDF
-        extracted_text = ""
-        if document_file.filename.lower().endswith(".pdf"):
-            extracted_text = extract_text_from_pdf(content)
-        
-        # Send to Supervity Service (Main flow)
-        result_json = await supervity_service.analyze_document(
-            file_content=content,
-            filename=document_file.filename,
-            content_type=document_file.content_type,
-            target_language=target_language
-        )
-        
-        if "status" in result_json and result_json["status"] == "error":
-            raise HTTPException(status_code=500, detail=result_json.get("message", "AI Agent error"))
-            
-        # Enhance result with our GROQ specific classifier rules if we got text
-        if extracted_text:
-            logger.info("Using Groq API to classify the uploaded PDF text...")
-            groq_res = classify_text_with_groq(extracted_text)
-            if groq_res and "document_type" in groq_res:
-                result_json["document_type"] = groq_res["document_type"]
-                result_json["confidence"] = groq_res.get("confidence", 0.95)
-            
-        return result_json
+# @app.post("/api/analyze")
+# async def analyze_document(...):
+#     ...
+#
+# @app.post("/api/analyze-fast")
+# async def analyze_document_fast(...):
+#     ...
 
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        logger.error(f"Unexpected error during analysis: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 FOLLOWUP_SYSTEM_PROMPT = """
 You are an intelligent legal assistant.
@@ -209,7 +176,7 @@ def followup_with_groq(data_json: str, question: str) -> dict:
     if not client: return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": FOLLOWUP_SYSTEM_PROMPT},
                 {"role": "user", "content": f"Document Context Data:\n{data_json}\n\nUser Question:\n{question}"}
@@ -437,7 +404,7 @@ def analyze_risk_with_groq(clauses_json: str, document_type: str) -> dict:
     try:
         prompt = ANALYZE_RISK_SYSTEM_PROMPT.format(document_type=document_type)
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": clauses_json}
@@ -538,7 +505,7 @@ def simplify_clauses_with_groq(clauses_json: str) -> dict:
     if not client: return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SIMPLIFY_CLAUSES_SYSTEM_PROMPT},
                 {"role": "user", "content": clauses_json}
@@ -630,7 +597,7 @@ def score_document_with_groq(clauses_json: str) -> dict:
     if not client: return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SCORE_DOCUMENT_SYSTEM_PROMPT},
                 {"role": "user", "content": clauses_json}
@@ -740,7 +707,7 @@ def translate_with_groq(data_json: str, target_lang: str) -> dict:
     if not client: return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": TRANSLATE_SYSTEM_PROMPT},
                 {"role": "user", "content": f"Target Language: {target_lang}\n\nData Payload:\n{data_json}"}
@@ -844,7 +811,7 @@ def format_response_with_groq(data_json: str) -> dict:
     if not client: return None
     try:
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": FORMATTER_SYSTEM_PROMPT},
                 {"role": "user", "content": data_json}

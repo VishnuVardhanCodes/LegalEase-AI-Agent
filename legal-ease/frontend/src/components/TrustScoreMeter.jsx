@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, AlertCircle, CheckCircle } from 'lucide-react';
 
 const TrustScoreMeter = ({ score }) => {
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    let currentScore = 0;
+    const increment = Math.ceil(score / 50); // Control speed of animation
+    const interval = setInterval(() => {
+      currentScore += increment;
+      if (currentScore >= score) {
+        setDisplayScore(score);
+        clearInterval(interval);
+      } else {
+        setDisplayScore(currentScore);
+      }
+    }, 30);
+    return () => clearInterval(interval);
+  }, [score]);
+
   const getScoreColor = (s) => {
     if (s >= 75) return { color: '#10b981', text: 'HIGH TRUST', icon: <CheckCircle className="w-6 h-6" /> };
     if (s >= 40) return { color: '#f59e0b', text: 'MODERATE RISK', icon: <AlertCircle className="w-6 h-6" /> };
@@ -51,7 +68,7 @@ const TrustScoreMeter = ({ score }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-5xl font-black text-white"
           >
-            {score}
+            {displayScore}
           </motion.span>
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Trust Score</span>
         </div>

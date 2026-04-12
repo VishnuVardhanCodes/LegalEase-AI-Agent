@@ -1,526 +1,316 @@
-import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Upload, FileText, CheckCircle2, AlertCircle, Globe, Scale, 
-  Sparkles, ChevronRight, ChevronDown, Check, Play, Sun, Moon,
-  FileSearch, ShieldCheck, Briefcase, Landmark, ScrollText
-} from 'lucide-react';
-import axios from 'axios';
+import { Upload, FileText, Shield, Zap, X, Globe, ChevronDown, Check } from 'lucide-react';
 import AgentWorkflow from './AgentWorkflow';
-import HeroBackground from './HeroBackground';
+import { InnovativeFeatures, RealWorldImpact, TechStackSection, FooterConnect } from './LandingSections';
 
 const UploadPage = ({ onAnalysisComplete }) => {
-  const [file, setFile] = useState(null);
-  const [language, setLanguage] = useState('English');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  
+  // Language Selection State
+  const [language, setLanguage] = useState("English");
+  const languages = ['English', 'Hindi', 'Telugu'];
 
-  // Classification State
-  const [textToClassify, setTextToClassify] = useState('');
-  const [classificationResult, setClassificationResult] = useState(null);
-  const [extractedClauses, setExtractedClauses] = useState(null);
-  const [isClassifying, setIsClassifying] = useState(false);
-
-  const handleClassifyText = async () => {
-    if (!textToClassify.trim()) return;
-    setIsClassifying(true);
-    setClassificationResult(null);
-    setExtractedClauses(null);
-    try {
-      // 1. Classify
-      const classRes = await axios.post('https://legalease-ai-agent.onrender.com/api/classify', {
-        text: textToClassify
-      });
-      setClassificationResult(classRes.data);
-      
-      // 2. Extract Clauses
-      const extractRes = await axios.post('https://legalease-ai-agent.onrender.com/api/extract', {
-        document_type: classRes.data.document_type,
-        text: textToClassify
-      });
-      const basicClauses = extractRes.data.clauses;
-
-      // 3. Risk Analysis
-      const riskRes = await axios.post('https://legalease-ai-agent.onrender.com/api/analyze_risk', {
-        document_type: classRes.data.document_type,
-        clauses: basicClauses
-      });
-      const riskMapped = riskRes.data.risk_analysis || [];
-
-      // Merge early for simplication
-      const combinedForSimplify = basicClauses.map(c => {
-         const r = riskMapped.find(rk => rk.clause_number === c.clause_number);
-         return { ...c, risk_level: r ? r.risk_level : "SAFE" };
-      });
-
-      // 4. Simplify
-      const simpRes = await axios.post('https://legalease-ai-agent.onrender.com/api/simplify_clauses', {
-        clauses: combinedForSimplify
-      });
-      const simpMapped = simpRes.data.simplified_clauses || [];
-
-      // Combine all data
-      const richClauses = basicClauses.map(c => {
-         const r = riskMapped.find(rk => rk.clause_number === c.clause_number);
-         const s = simpMapped.find(sm => sm.clause_number === c.clause_number);
-         return { 
-           ...c, 
-           risk_level: r?.risk_level || "SAFE", 
-           risk_reason: r?.risk_reason || "", 
-           plain_explanation: s?.plain_explanation || "", 
-           suggested_action: s?.suggested_action || "" 
-         };
-      });
-
-      setExtractedClauses(richClauses);
-    } catch (err) {
-      setError("Classification failed. Make sure backend is running.");
-    } finally {
-      setIsClassifying(false);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
     }
   };
-  const languages = ['English', 'Hindi', 'Telugu'];
-  
-  const docTags = [
-    { name: 'Rental Agreement', icon: <Landmark size={14} /> },
-    { name: 'Job Offer', icon: <Briefcase size={14} /> },
-    { name: 'Loan Agreement', icon: <ScrollText size={14} /> },
-    { name: 'NDA', icon: <ShieldCheck size={14} /> }
-  ];
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('light-mode');
-  };
-
-  const onDrop = useCallback((acceptedFiles) => {
-    setFile(acceptedFiles[0]);
-    setError(null);
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
-    multiple: false
-  });
 
   const handleAnalyze = async (mockData = null) => {
-    if (!file && !mockData) {
-      setError("Please select a document or use the demo document.");
+    if (!selectedFile && !mockData) {
       return;
     }
-
-    setIsAnalyzing(true);
-    setError(null);
-
-    // If it's a demo document, we simulate the whole process with mock data
+    
+    // Instead of analyzing here, we just pass control instantly to the dashboard
     if (mockData) {
-      // Step simulation is handled by the ProcessingScreen (to be added)
-      // For now, we simulate a delay and then complete
-      setTimeout(() => {
-        onAnalysisComplete(mockData);
-      }, 3000);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('document_file', file);
-    formData.append('target_language', language);
-
-    try {
-      const response = await axios.post('https://legalease-ai-agent.onrender.com/api/analyze', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      onAnalysisComplete(response.data);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Failed to analyze document. Ensure the backend is running.");
-      setIsAnalyzing(false);
+      onAnalysisComplete({ data: mockData, file: null, language });
+    } else {
+      onAnalysisComplete({ data: null, file: selectedFile, language });
     }
   };
 
-  const handleDemo = () => {
-    const mockAnalysis = {
-      document_type: "Employment Agreement (Demo)",
-      trust_score: 62,
-      overall_summary: "This is a standard employment contract with several cautionary points regarding intellectual property ownership and a non-compete clause that might be overly restrictive in certain jurisdictions.",
-      risk_summary: { risky: 2, caution: 3, safe: 5 },
-      clauses: [
-        {
-          clause_number: "1.1",
-          title: "Standard Compensation",
-          risk_level: "SAFE",
-          plain_english: "Your salary is $120,000 per year, paid monthly.",
-          risk_reason: "Standard industry rate with clear payment terms.",
-          original_text: "The Employee shall be entitled to an annual base salary of $120,000.00 USD, payable in accordance with the Company's standard payroll practices."
-        },
-        {
-          clause_number: "4.2",
-          title: "Non-Compete Clause",
-          risk_level: "RISKY",
-          plain_english: "You cannot work for any competitor anywhere in the world for 3 years after leaving.",
-          risk_reason: "The 3-year duration and global scope are likely unenforceable and highly restrictive.",
-          original_text: "For a period of thirty-six (36) months following termination, the Employee shall not engage in any business activity that competes with the Company, regardless of geographic location."
-        },
-        {
-          clause_number: "5.1",
-          title: "IP Assignment",
-          risk_level: "CAUTION",
-          plain_english: "Everything you create belongs to the company, even if done on your own time.",
-          risk_reason: "Uses broad language that may capture personal projects created outside of work hours.",
-          original_text: "All inventions, improvements, and works of authorship created by the Employee during the term of employment are the sole and exclusive property of the Company."
-        }
-      ]
-    };
-    handleAnalyze(mockAnalysis);
+  const handleUpload = () => {
+    if (selectedFile) {
+      console.log("Uploading file:", selectedFile.name);
+      setShowUploadModal(false);
+      handleAnalyze();
+    }
   };
 
   return (
-    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden py-20 pb-40">
-      <HeroBackground />
-      <div className="bg-grid opacity-30" />
+    <div className="landing-page" data-testid="landing-page">
+      {/* Animated World Map Background */}
+      <div className="world-map-container">
+        <div className="hero-glow-orb" style={{ top: '-10%', left: '-10%' }}></div>
+        <div className="hero-glow-orb" style={{ bottom: '10%', right: '10%', background: 'radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%)', animationDelay: '-4s' }}></div>
+        <div className="world-map-overlay"></div>
+        <svg className="world-map" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+          {/* Animated connection lines */}
+          <g className="connection-lines">
+            <line x1="200" y1="150" x2="500" y2="200" className="animated-line" />
+            <line x1="500" y1="200" x2="800" y2="180" className="animated-line line-delay-1" />
+            <line x1="300" y1="300" x2="600" y2="350" className="animated-line line-delay-2" />
+            <line x1="700" y1="250" x2="950" y2="280" className="animated-line line-delay-3" />
+            <line x1="150" y1="400" x2="400" y2="420" className="animated-line line-delay-1" />
+            <line x1="600" y1="400" x2="900" y2="380" className="animated-line line-delay-2" />
+          </g>
+          
+          {/* Animated dots representing cities/nodes */}
+          <g className="map-nodes">
+            <circle cx="200" cy="150" r="4" className="node-pulse" />
+            <circle cx="500" cy="200" r="4" className="node-pulse pulse-delay-1" />
+            <circle cx="800" cy="180" r="4" className="node-pulse pulse-delay-2" />
+            <circle cx="300" cy="300" r="4" className="node-pulse pulse-delay-3" />
+            <circle cx="600" cy="350" r="4" className="node-pulse pulse-delay-1" />
+            <circle cx="950" cy="280" r="4" className="node-pulse pulse-delay-2" />
+            <circle cx="150" cy="400" r="4" className="node-pulse" />
+            <circle cx="400" cy="420" r="4" className="node-pulse pulse-delay-3" />
+            <circle cx="900" cy="380" r="4" className="node-pulse pulse-delay-1" />
+          </g>
 
-      {/* Theme & Language Toggles */}
-      <div className="fixed top-24 right-8 z-[110] flex items-center gap-4">
-        <button 
-          onClick={toggleTheme}
-          className="p-3 rounded-xl glass border border-white/10 text-white hover:bg-white/10 transition-all shadow-lg"
-          aria-label="Toggle Theme"
-        >
-          {isDarkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-indigo-400" />}
-        </button>
-      </div>
-
-      {/* Hero Header */}
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-          }
-        }}
-        className="text-center z-10 mb-12 space-y-4 px-4 relative"
-      >
-        <motion.div 
-          variants={{
-            hidden: { opacity: 0, scale: 0.8 },
-            visible: { opacity: 1, scale: 1 }
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6 bg-white/[0.02]"
-        >
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-primary-light" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-light">LegalEase AI</span>
-          </div>
-          <div className="w-[1px] h-3 bg-white/10 mx-1" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Production Grade</span>
-        </motion.div>
-        
-        <motion.h1 
-          variants={{
-            hidden: { opacity: 0, y: 20 },
-            visible: { opacity: 1, y: 0 }
-          }}
-          className="text-5xl md:text-8xl font-black tracking-tight text-white max-w-5xl mx-auto leading-[0.95] md:leading-[1]"
-        >
-          Understand Legal Documents <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-secondary to-primary-light animate-gradient-x contrast-125">Before You Sign.</span>
-        </motion.h1>
-        
-        <motion.p 
-          variants={{
-            hidden: { opacity: 0, y: 20 },
-            visible: { opacity: 1, y: 0 }
-          }}
-          className="text-lg md:text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed pt-4"
-        >
-          Upload any legal agreement and get a plain-language summary instantly. 
-          <br className="hidden md:block"/> Empowering you with AI-driven document intelligence.
-        </motion.p>
-      </motion.div>
-
-      {/* Document Tags */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="flex flex-wrap justify-center gap-3 z-10 mb-12 max-w-2xl px-4"
-      >
-        {docTags.map((tag) => (
-          <div 
-            key={tag.name}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold text-slate-300 hover:text-white hover:border-primary/50 transition-all cursor-default"
-          >
-            {tag.icon}
-            {tag.name}
-          </div>
-        ))}
-      </motion.div>
-
-      {/* Main Upload Area */}
-      <div className="w-full max-w-3xl z-10 px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="glass-card rounded-[40px] p-2 overflow-hidden relative"
-        >
-          <div className="bg-[#0c0c12]/80 rounded-[38px] p-10 md:p-14 relative overflow-hidden">
+          {/* Simplified world map outline */}
+          <g className="map-outline" opacity="0.15">
+            {/* North America */}
+            <path d="M150,120 L180,100 L220,110 L250,140 L230,180 L200,190 L170,170 Z" fill="none" stroke="currentColor" strokeWidth="1" />
             
-            <div 
-              {...getRootProps()} 
-              className={`
-                relative group flex flex-col items-center justify-center border-2 border-dashed rounded-[30px] p-12 transition-all duration-500
-                ${isDragActive ? 'border-primary bg-primary/5 scale-[0.98]' : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'}
-                ${file ? 'border-emerald-500/30 bg-emerald-500/5' : ''}
-              `}
-            >
-              <input {...getInputProps()} />
+            {/* Europe */}
+            <path d="M480,140 L520,130 L550,150 L540,180 L510,185 L485,170 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+            
+            {/* Asia */}
+            <path d="M650,120 L750,110 L850,130 L880,160 L860,200 L800,210 L720,190 L680,170 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+            
+            {/* Africa */}
+            <path d="M450,280 L500,270 L540,290 L550,340 L520,380 L480,390 L460,350 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+            
+            {/* South America */}
+            <path d="M280,340 L320,330 L350,360 L340,420 L310,450 L285,430 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+            
+            {/* Australia */}
+            <path d="M850,380 L900,375 L930,400 L920,430 L880,435 L860,410 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+          </g>
+        </svg>
+      </div>
+
+      {/* Main Content */}
+      <div className="hero-container" data-testid="hero-section">
+        <div className="hero-content">
+          {/* Left Side - Text Content */}
+          <div className="hero-left" data-testid="hero-text-section">
+            <div className="brand-badge" data-testid="brand-badge">
+              <Shield className="w-4 h-4" />
+              <span>LEGALEASE AI</span>
+              <span className="badge-separator">•</span>
+              <span>PRODUCTION GRADE</span>
+            </div>
+
+            <h1 className="hero-title" data-testid="hero-title">
+              <span className="title-line-1">Understand Legal</span>
+              <span className="title-line-2">Documents</span>
+              <span className="title-line-3">Before You Sign.</span>
+            </h1>
+
+            <p className="hero-description" data-testid="hero-description">
+              Upload any legal agreement and get a plain-language summary instantly.
+            </p>
+
+            <p className="hero-subtext" data-testid="hero-subtext">
+              Empowering you with AI-driven document intelligence.
+            </p>
+
+            <div className="cta-buttons" data-testid="cta-buttons">
+              <button 
+                className="btn-primary" 
+                onClick={() => setShowUploadModal(true)}
+                data-testid="upload-document-btn"
+              >
+                <Upload className="w-5 h-5" />
+                Upload Document
+              </button>
+              <button className="btn-secondary" data-testid="learn-more-btn">
+                <Zap className="w-5 h-5" />
+                See How It Works
+              </button>
               
-              <div className="mb-6 relative">
-                 <div className="absolute inset-0 bg-primary blur-3xl opacity-20 animate-pulse" />
-                 <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${file ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary-light group-hover:scale-110'}`}>
-                   {file ? <FileText size={32} /> : <Upload size={32} />}
-                 </div>
-              </div>
 
-              <div className="text-center">
-                <p className="text-xl font-semibold text-white mb-2">
-                  {file ? file.name : "Drag and drop legal PDF"}
-                </p>
-                <p className="text-sm text-slate-500 font-medium">
-                  {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB • Ready` : "Your data is encrypted and secure"}
-                </p>
-              </div>
             </div>
 
-            {/* controls */}
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="flex flex-col gap-3">
-                  <div className="relative group">
-                    <button
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-6 py-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Globe className="w-4 h-4 text-primary-light" />
-                        <span>{language}</span>
-                      </div>
-                      <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    <AnimatePresence>
-                      {isDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute bottom-[calc(100%+8px)] left-0 right-0 z-30 glass-card rounded-2xl overflow-hidden p-1 border border-white/10 bg-[#0c0c12]/95"
-                        >
-                          {languages.map((lang) => (
-                            <button
-                              key={lang}
-                              onClick={() => { setLanguage(lang); setIsDropdownOpen(false); }}
-                              className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${language === lang ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-                            >
-                              {lang}
-                              {language === lang && <Check className="w-4 h-4 text-primary-light" />}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <button 
-                    onClick={handleDemo}
-                    className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
-                  >
-                    <Play size={14} className="text-primary-light" />
-                    Try with Demo Document
-                  </button>
-               </div>
-
-               <div className="flex items-start">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleAnalyze()}
-                    disabled={isAnalyzing || !file}
-                    className={`
-                      w-full h-[60px] rounded-2xl font-bold uppercase tracking-[0.1em] text-sm flex items-center justify-center gap-3 transition-all
-                      ${isAnalyzing || !file 
-                        ? 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5' 
-                        : 'bg-primary hover:bg-primary-dark text-white shadow-[0_0_30px_rgba(99,102,241,0.5)] glow-pulse'
-                      }
-                    `}
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        Analyze Document
-                        <ChevronRight size={18} />
-                      </>
-                    )}
-                  </motion.button>
-               </div>
+            {/* Feature Pills */}
+            <div className="feature-pills" data-testid="feature-pills">
+              <div className="pill">
+                <FileText className="w-4 h-4" />
+                <span>Rental Agreement</span>
+              </div>
+              <div className="pill">
+                <FileText className="w-4 h-4" />
+                <span>Job Offer</span>
+              </div>
+              <div className="pill">
+                <FileText className="w-4 h-4" />
+                <span>Loan Agreement</span>
+              </div>
+              <div className="pill">
+                <FileText className="w-4 h-4" />
+                <span>NDA</span>
+              </div>
             </div>
-
-            <AnimatePresence>
-               {error && (
-                 <motion.div 
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   exit={{ opacity: 0 }}
-                   className="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400 text-sm font-medium"
-                 >
-                   <AlertCircle size={18} />
-                   {error}
-                 </motion.div>
-               )}
-            </AnimatePresence>
           </div>
-        </motion.div>
-      </div>
 
-      {/* Quick Text Classification */}
-      <div className="w-full max-w-3xl z-10 px-4 mt-8">
-         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card rounded-[40px] p-8 border border-white/5 bg-white/[0.01]"
-         >
-            <div className="flex items-center gap-3 mb-6">
-                <FileSearch className="text-indigo-400" size={20} />
-                <h3 className="text-lg font-bold text-white tracking-tight">Quick Document Classification</h3>
+          {/* Right Side - Animated Robot Scanner */}
+          <div className="hero-right" data-testid="robot-section">
+            <div className="robot-container">
+              <svg className="robot-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <g className="robot-body">
+                  <rect x="150" y="80" width="100" height="80" rx="10" className="robot-part robot-head" />
+                  <circle cx="175" cy="110" r="8" className="robot-eye eye-left" />
+                  <circle cx="225" cy="110" r="8" className="robot-eye eye-right" />
+                  <line x1="200" y1="80" x2="200" y2="50" className="robot-antenna" />
+                  <circle cx="200" cy="45" r="6" className="antenna-tip" />
+                  <rect x="140" y="170" width="120" height="140" rx="15" className="robot-part robot-torso" />
+                  <rect x="160" y="200" width="80" height="60" rx="5" className="chest-display" />
+                  <rect x="100" y="180" width="30" height="100" rx="15" className="robot-part robot-arm-left" />
+                  <rect x="270" y="180" width="30" height="100" rx="15" className="robot-part robot-arm-right" />
+                  <circle cx="115" cy="290" r="15" className="robot-hand hand-left" />
+                  <circle cx="285" cy="290" r="15" className="robot-hand hand-right" />
+                  <rect x="155" y="320" width="35" height="100" rx="10" className="robot-part robot-leg-left" />
+                  <rect x="210" y="320" width="35" height="100" rx="10" className="robot-part robot-leg-right" />
+                  <ellipse cx="172" cy="430" rx="20" ry="10" className="robot-foot" />
+                  <ellipse cx="227" cy="430" rx="20" ry="10" className="robot-foot" />
+                </g>
+
+                <g className="scanning-document">
+                  <rect x="60" y="240" width="70" height="90" rx="5" className="document" />
+                  <line x1="70" y1="255" x2="120" y2="255" className="doc-line" />
+                  <line x1="70" y1="270" x2="120" y2="270" className="doc-line" />
+                  <line x1="70" y1="285" x2="115" y2="285" className="doc-line" />
+                  <line x1="70" y1="300" x2="120" y2="300" className="doc-line" />
+                  <line x1="70" y1="315" x2="110" y2="315" className="doc-line" />
+                  <rect x="55" y="240" width="80" height="3" className="scan-beam" />
+                </g>
+
+                <g className="data-particles">
+                  <circle cx="150" cy="250" r="3" className="particle p1" />
+                  <circle cx="160" cy="270" r="2" className="particle p2" />
+                  <circle cx="145" cy="290" r="2.5" className="particle p3" />
+                  <circle cx="155" cy="310" r="2" className="particle p4" />
+                  <circle cx="150" cy="265" r="2" className="particle p5" />
+                  <circle cx="158" cy="285" r="3" className="particle p6" />
+                </g>
+
+                <g className="analysis-circles">
+                  <circle cx="200" cy="260" r="40" className="analysis-ring ring-1" />
+                  <circle cx="200" cy="260" r="60" className="analysis-ring ring-2" />
+                  <circle cx="200" cy="260" r="80" className="analysis-ring ring-3" />
+                </g>
+              </svg>
+
+              <div className="status-indicators">
+                <div className="status-card status-1" data-testid="status-analyzing">
+                  <div className="status-icon">🔍</div>
+                  <div className="status-text">Analyzing...</div>
+                </div>
+                <div className="status-card status-2" data-testid="status-extracting">
+                  <div className="status-icon">📄</div>
+                  <div className="status-text">Extracting Text</div>
+                </div>
+                <div className="status-card status-3" data-testid="status-processing">
+                  <div className="status-text">⚡ AI Processing</div>
+                </div>
+              </div>
             </div>
-            <textarea
-                value={textToClassify}
-                onChange={(e) => setTextToClassify(e.target.value)}
-                placeholder="Paste legal text here to instantly identify the document type (e.g. Landlord/Tenant, Employer, etc.)..."
-                className="w-full h-32 bg-[#0c0c12]/50 border border-white/10 rounded-2xl p-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50 transition-all resize-none shadow-inner custom-scrollbar"
-            />
-            <div className="flex justify-between items-center mt-4">
-                <button
-                   onClick={handleClassifyText}
-                   disabled={isClassifying || !textToClassify.trim()}
-                   className="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest bg-white/10 hover:bg-white/20 text-white transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                   {isClassifying ? "CLASSIFYING..." : "CLASSIFY TEXT"}
-                </button>
-                {classificationResult && (
-                   <motion.div 
-                     initial={{ opacity: 0, scale: 0.9 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     className="flex flex-col text-right"
-                   >
-                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Type Detected</span>
-                     <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm font-bold text-emerald-400">{classificationResult.document_type}</span>
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-500 text-[10px] font-black">{Math.round(classificationResult.confidence * 100)}%</span>
-                     </div>
-                   </motion.div>
-                )}
+          </div>
+        </div>
+      </div>
+
+      {/* Agent Workflow Section - Kept as the transition between Hero and Details */}
+      <div className="relative z-10 w-full mt-24">
+         <AgentWorkflow />
+      </div>
+
+      <InnovativeFeatures />
+      <RealWorldImpact />
+      <TechStackSection />
+      <FooterConnect />
+
+      {/* --- Existing Upload Modal Code Below --- */}
+      {showUploadModal && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowUploadModal(false)} 
+          data-testid="upload-modal"
+        >
+          <div 
+            className="modal-content" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="modal-close" 
+              onClick={() => setShowUploadModal(false)}
+              data-testid="modal-close-btn"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            <h2 className="modal-title">Upload Legal Document</h2>
+            <p className="modal-description">
+              Upload your legal document and get an AI-powered summary in plain language
+            </p>
+
+            <div className="upload-area" data-testid="file-upload-area">
+              <input
+                type="file"
+                id="file-upload"
+                className="file-input"
+                accept=".pdf,.doc,.docx,.txt"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="file-upload" className="upload-label">
+                <Upload className="w-12 h-12 mb-4" />
+                <span className="upload-text">
+                  {selectedFile ? selectedFile.name : "Click to browse or drag and drop"}
+                </span>
+                <span className="upload-subtext">PDF, DOC, DOCX, TXT (Max 10MB)</span>
+              </label>
             </div>
 
-            <AnimatePresence>
-              {extractedClauses && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-8 pt-8 border-t border-white/5 space-y-6"
-                >
-                   <div className="flex items-center gap-3 mb-2">
-                     <ShieldCheck className="text-emerald-400 w-5 h-5" />
-                     <h4 className="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em]">Deep Scan Complete • {extractedClauses.length} Clauses Analyzed</h4>
-                   </div>
-                   
-                   <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
-                      {extractedClauses.map((c, i) => {
-                        const getRiskColor = (level) => {
-                          switch (level) {
-                            case 'SAFE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-                            case 'CAUTION': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                            case 'RISKY': return 'text-red-400 bg-red-500/10 border-red-500/20';
-                            default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
-                          }
-                        };
+            {/* Language Selection inside Modal */}
+            <div className="mt-6 mb-4">
+              <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-indigo-400" />
+                Select Output Language
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {languages.map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className={`py-3 px-2 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${
+                      language === lang 
+                        ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-slate-200 hover:border-white/20'
+                    }`}
+                  >
+                    {language === lang && <Check className="w-4 h-4" />}
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                        return (
-                        <div key={i} className="p-6 rounded-3xl bg-[#0c0c12]/80 border border-white/5 space-y-5 shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all">
-                           {/* Glow Effect */}
-                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
-                           
-                           {/* Header */}
-                           <div className="flex items-center justify-between relative z-10">
-                             <div className="flex items-center gap-3">
-                               <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-black border border-indigo-500/20">
-                                 {c.clause_number}
-                               </div>
-                               <span className="font-black text-white text-base tracking-tight">{c.clause_title}</span>
-                             </div>
-                             <div className={`px-3 py-1 rounded-full border text-[10px] font-bold tracking-widest ${getRiskColor(c.risk_level)}`}>
-                               {c.risk_level}
-                             </div>
-                           </div>
-                           
-                           {/* Content Grid */}
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                              {/* Simplification */}
-                              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                                 <div className="flex items-center gap-2 text-indigo-400">
-                                   <Sparkles size={14} />
-                                   <span className="text-[10px] font-bold uppercase tracking-widest">Plain English Overview</span>
-                                 </div>
-                                 <p className="text-sm text-slate-300 font-medium leading-relaxed">
-                                   {c.plain_explanation}
-                                 </p>
-                                 {c.risk_reason && (
-                                   <div className="pt-3 mt-3 border-t border-white/5">
-                                     <p className="text-xs text-slate-400 leading-relaxed">
-                                       <span className="font-bold text-slate-300">Why it matters: </span>
-                                       {c.risk_reason}
-                                     </p>
-                                     <p className="text-xs text-slate-400 leading-relaxed mt-1">
-                                       <span className="font-bold text-indigo-300">Action: </span>
-                                       {c.suggested_action}
-                                     </p>
-                                   </div>
-                                 )}
-                              </div>
-                              
-                              {/* Original Text */}
-                              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
-                                 <div className="flex items-center gap-2 text-slate-500">
-                                   <FileText size={14} />
-                                   <span className="text-[10px] font-bold uppercase tracking-widest">Original Reference</span>
-                                 </div>
-                                 <p className="text-[11px] text-slate-500 leading-relaxed font-mono overflow-y-auto max-h-32 custom-scrollbar pr-2">
-                                   {c.clause_text}
-                                 </p>
-                              </div>
-                           </div>
-                        </div>
-                      )})}
-                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-         </motion.div>
-      </div>
-
-      {/* Agent Workflow Section - KEPT AS REQUESTED */}
-      <div className="relative z-10 w-full mb-12">
-        <AgentWorkflow />
-      </div>
+            <button 
+              className="btn-upload" 
+              onClick={handleUpload}
+              disabled={!selectedFile}
+              data-testid="confirm-upload-btn"
+            >
+              <Upload className="w-5 h-5" />
+              Analyze Document
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
