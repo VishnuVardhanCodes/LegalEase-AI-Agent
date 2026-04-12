@@ -46,17 +46,22 @@ const UploadSection = ({ onUploadSuccess }) => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16 space-y-4"
+        className="text-center mb-20 space-y-6"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black tracking-widest uppercase mb-4">
-          <Sparkles className="h-3 w-3" /> AI Legal Intelligence
+        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-400 text-[10px] font-black tracking-[0.3em] uppercase backdrop-blur-md shadow-xl">
+          <Sparkles className="h-4 w-4 animate-pulse" /> Agentic Neural Analysis
         </div>
-        <h1 className="text-6xl font-black text-white mb-6 tracking-tighter leading-tight">
-          Analyze Documents with <br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Expert Precision.</span>
+        <h1 className="text-6xl md:text-7xl font-black text-white px-2 tracking-tighter leading-[1.1]">
+          Analyze Documents <br/>
+          <span className="relative inline-block mt-2">
+            <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 bg-[length:200%_auto] animate-gradient-x drop-shadow-[0_10px_30px_rgba(99,102,241,0.4)]">
+              with Expert Precision.
+            </span>
+            <div className="absolute -bottom-2 left-0 right-0 h-1 bg-indigo-500/20 blur-[8px] rounded-full"></div>
+          </span>
         </h1>
-        <p className="text-slate-400 font-medium text-xl max-w-2xl mx-auto leading-relaxed">
-          Upload any legal PDF and our agentic engine will extract, simplify, and audit every clause for total transparency.
+        <p className="text-slate-500 font-bold text-lg max-w-2xl mx-auto leading-relaxed tracking-tight">
+          Upload any legal PDF and our <span className="text-slate-300">agentic intelligence</span> will extract, simplify, and audit every clause for <span className="text-indigo-400/80 italic">total legal transparency.</span>
         </p>
       </motion.div>
 

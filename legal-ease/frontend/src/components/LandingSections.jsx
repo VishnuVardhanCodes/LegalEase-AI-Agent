@@ -331,7 +331,7 @@ export const WorkflowSection = () => {
   ];
 
   return (
-    <section className="py-32 px-6 relative overflow-hidden bg-[#050508]/50">
+    <section id="how-it-works" className="py-32 px-6 relative overflow-hidden bg-[#050508]/50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-24 space-y-4">
           <motion.h2 

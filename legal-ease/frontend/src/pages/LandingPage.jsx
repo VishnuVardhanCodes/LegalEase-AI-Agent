@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Sparkles, ChevronRight, FileCheck, Search, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { InnovativeFeatures, RealWorldImpact, TechStackSection, FooterConnect, WorkflowSection } from '../components/LandingSections';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [selectedLanguage, setSelectedLanguage] = useState('EN');
+
+  const scrollToWorkflow = () => {
+    const element = document.getElementById('how-it-works');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleGetStarted = () => {
+    // Save selected language preferred
+    localStorage.setItem('preferredLanguage', selectedLanguage);
     // Simulate login by setting a dummy token
     localStorage.setItem('authToken', 'demo-token-12345');
-    localStorage.setItem('userData', JSON.stringify({ name: 'Felix Anderson', role: 'Premium' }));
+    localStorage.setItem('userData', JSON.stringify({ name: 'Vishnu Vardhan', role: 'Premium' }));
     navigate('/dashboard');
   };
 
@@ -32,28 +42,29 @@ const LandingPage = () => {
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-slate-400">
+          <div className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
             {['Features', 'Solutions', 'Community', 'Pricing'].map((item) => (
               <a 
                 key={item} 
                 href={`#${item.toLowerCase()}`} 
-                className="hover:text-white transition-all relative group"
+                className="hover:text-indigo-400 transition-all relative group py-2"
               >
                 {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-500 transition-all group-hover:w-full"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="hidden sm:block text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+            <button className="hidden sm:block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-all hover:scale-105 active:scale-95">
               Sign In
             </button>
             <button 
               onClick={handleGetStarted}
-              className="px-6 py-2.5 bg-white text-black rounded-lg text-xs font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all active:scale-95 shadow-xl shadow-white/5 hover:shadow-indigo-500/20"
+              className="px-8 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 hover:text-white transition-all active:scale-95 shadow-2xl shadow-white/5 hover:shadow-indigo-500/40 relative group overflow-hidden"
             >
-              Get Started
+              <span className="relative z-10 transition-transform group-hover:translate-x-1 inline-block">Get Started</span>
+              <div className="absolute inset-x-0 bottom-0 h-0 bg-indigo-700 transition-all group-hover:h-full -z-0 opacity-10"></div>
             </button>
           </div>
         </div>
@@ -105,19 +116,48 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center gap-4 pt-4"
+              className="space-y-6 pt-4"
             >
-              <button 
-                onClick={handleGetStarted}
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:-translate-y-1 flex items-center justify-center gap-3 group"
-              >
-                <Zap className="h-5 w-5 fill-white group-hover:animate-pulse" />
-                Upload Document
-              </button>
-              <button className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-md text-white rounded-xl font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-3">
-                <Sparkles className="h-5 w-5 text-indigo-400" />
-                See How It Works
-              </button>
+              {/* Language Selection */}
+              <div className="flex flex-col gap-3">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Select Output Language</span>
+                <div className="flex gap-2">
+                  {[
+                    { code: 'EN', name: 'English' },
+                    { code: 'HI', name: 'Hindi' },
+                    { code: 'TE', name: 'Telugu' }
+                  ].map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setSelectedLanguage(lang.code)}
+                      className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                        selectedLanguage === lang.code 
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 scale-105' 
+                        : 'bg-white/5 text-slate-500 hover:bg-white/10'
+                      }`}
+                    >
+                      {lang.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button 
+                  onClick={handleGetStarted}
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:-translate-y-1 flex items-center justify-center gap-3 group"
+                >
+                  <Zap className="h-5 w-5 fill-white group-hover:animate-pulse" />
+                  Upload Document
+                </button>
+                <button 
+                  onClick={scrollToWorkflow}
+                  className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-md text-white rounded-xl font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                >
+                  <Sparkles className="h-5 w-5 text-indigo-400" />
+                  See How It Works
+                </button>
+              </div>
             </motion.div>
 
             <motion.div
