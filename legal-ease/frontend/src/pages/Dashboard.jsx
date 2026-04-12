@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TrustScoreGauge from '../components/TrustScoreGauge';
 import RiskSummaryCards from '../components/RiskSummaryCards';
 import ClauseCard from '../components/ClauseCard';
 import ExecutiveSummary from '../components/ExecutiveSummary';
 import ChatAssistant from '../components/ChatAssistant';
 import UploadSection from '../components/UploadSection';
-import { FileText, LayoutDashboard, History, Settings, LogOut, ChevronRight, AlertCircle, Shield } from 'lucide-react';
+import HistoryPanel from '../components/HistoryPanel';
+import { FileText, LayoutDashboard, History, Settings, LogOut, ChevronRight, AlertCircle, Shield, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useNavigate } from 'react-router-dom';
@@ -13,24 +14,73 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [history, setHistory] = useState([]);
   const navigate = useNavigate();
 
+  // Load history on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('legalEaseHistory');
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Failed to parse history", e);
+      }
+    }
+  }, []);
+
   const handleUploadSuccess = (data) => {
+    // Add to history
+    const historyItem = {
+      ...data,
+      timestamp: new Date().toLocaleString(),
+      id: Date.now()
+    };
+    
+    const newHistory = [historyItem, ...history].slice(0, 20); // Keep last 20
+    setHistory(newHistory);
+    localStorage.setItem('legalEaseHistory', JSON.stringify(newHistory));
+    
     setAnalysisResult(data);
+    setActiveTab('dashboard');
   };
 
   const handleReset = () => {
     setAnalysisResult(null);
+    setActiveTab('dashboard');
+  };
+
+  const handleDeleteHistory = (index) => {
+    const newHistory = [...history];
+    newHistory.splice(index, 1);
+    setHistory(newHistory);
+    localStorage.setItem('legalEaseHistory', JSON.stringify(newHistory));
+  };
+
+  const handleSelectHistory = (item) => {
+    setAnalysisResult(item);
+    setActiveTab('dashboard');
   };
 
   const handleLogout = () => {
-    // Clear auth data
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     sessionStorage.clear();
-    
-    // Redirect to landing
     navigate('/', { replace: true });
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!analysisResult) return;
+    
+    const text = `🔍 *LegalEase AI Analysis Report*\n\n` +
+      `📄 *Document:* ${analysisResult.document_type || 'Legal Document'}\n` +
+      `🎯 *Trust Score:* ${analysisResult.trust_score}%\n` +
+      `⚠️ *Risk Summary:* ${analysisResult.risk_summary?.safe} Safe, ${analysisResult.risk_summary?.caution} Caution, ${analysisResult.risk_summary?.risky} Risky\n\n` +
+      `💡 *Summary:* ${analysisResult.executive_summary?.slice(0, 150)}...\n\n` +
+      `Analyzed with LegalEase AI ✨`;
+    
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -101,7 +151,20 @@ const Dashboard = () => {
 
         <div className="p-8 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
-            {!analysisResult ? (
+            {activeTab === 'history' ? (
+              <motion.div
+                key="history"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+              >
+                <HistoryPanel 
+                  history={history} 
+                  onSelect={handleSelectHistory} 
+                  onDelete={handleDeleteHistory}
+                />
+              </motion.div>
+            ) : !analysisResult ? (
               <motion.div
                 key="upload"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -128,7 +191,7 @@ const Dashboard = () => {
                 </div>
                 <h3 className="text-4xl font-black text-white mb-4 tracking-tight">Analysis Interrupted</h3>
                 <p className="text-slate-400 mb-12 max-w-md mx-auto font-medium text-lg leading-relaxed">
-                  {analysisResult.details || "We encountered an unexpected issue while analyzing your document. This can happen with complex legal structures or temporary API timeouts."}
+                  {analysisResult.details || "We encountered an unexpected issue while analyzing your document."}
                 </p>
                 <button 
                   onClick={handleReset}
@@ -158,26 +221,38 @@ const Dashboard = () => {
                     </div>
                     <h2 className="text-5xl font-black text-white tracking-tight">Legal <span className="text-indigo-500">Intelligence</span> Report</h2>
                   </div>
-                  <button 
-                    onClick={handleReset}
-                    className="group px-8 py-4 bg-[#1E293B] text-white border border-white/10 rounded-2xl text-sm font-black shadow-xl hover:bg-slate-800 transition-all flex items-center gap-3"
-                  >
-                    Analyze New Document
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={shareOnWhatsApp}
+                      className="group px-6 py-4 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-2xl text-sm font-black shadow-xl hover:bg-[#25D366]/20 transition-all flex items-center gap-3"
+                    >
+                      <Share2 className="w-5 h-5" />
+                      Share to WhatsApp
+                    </button>
+                    
+                    <button 
+                      onClick={handleReset}
+                      className="group px-8 py-4 bg-[#1E293B] text-white border border-white/10 rounded-2xl text-sm font-black shadow-xl hover:bg-slate-800 transition-all flex items-center gap-3"
+                    >
+                      Analyze New Document
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                  {/* Left Column */}
                   <div className="lg:col-span-8 space-y-10">
-                    {/* Trust Score & Risk Summary Combined Area */}
                     <div className="bg-[#1E293B]/40 rounded-[2.5rem] border border-white/5 shadow-2xl p-10 backdrop-blur-sm relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
                         <TrustScoreGauge score={analysisResult?.trust_score || 0} />
                         <div className="space-y-6">
                            <h3 className="text-2xl font-black text-white mb-6">Risk Architecture</h3>
-                           <RiskSummaryCards summary={analysisResult?.risk_summary || {}} />
+                           <RiskSummaryCards 
+                             summary={analysisResult?.risk_summary || {}} 
+                             clauses={analysisResult?.clauses || []} 
+                           />
                         </div>
                       </div>
                     </div>
@@ -199,17 +274,10 @@ const Dashboard = () => {
                         {(analysisResult?.clauses || []).map((clause, idx) => (
                           <ClauseCard key={idx} clause={clause} />
                         ))}
-                        {(!analysisResult?.clauses || analysisResult.clauses.length === 0) && (
-                          <div className="p-16 text-center bg-[#1E293B]/20 rounded-3xl border border-dashed border-white/10 text-slate-500 font-bold">
-                            <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                            No distinct clauses were identified in this document.
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column - Chat */}
                   <div className="lg:col-span-4 sticky top-28 h-fit">
                     <div className="relative group">
                       <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-[2rem] blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
