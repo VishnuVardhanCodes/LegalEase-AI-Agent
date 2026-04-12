@@ -93,7 +93,7 @@ const Dashboard = () => {
             </div>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[2px] shadow-lg shadow-indigo-500/10 hover:scale-110 transition-transform cursor-pointer">
               <div className="w-full h-full rounded-[10px] bg-slate-900 overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Vishnu" alt="User Avatar" />
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver" alt="User Avatar" />
               </div>
             </div>
           </div>

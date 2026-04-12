@@ -25,13 +25,16 @@ const ChatAssistant = ({ documentContext }) => {
     setIsLoading(true);
 
     try {
+      // Get preferred language from storage
+      const preferredLanguage = localStorage.getItem('preferredLanguage') || 'English';
+      
       const response = await fetch('http://localhost:8000/api/followup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: userMessage,
           document_context: JSON.stringify(documentContext),
-          language: 'English'
+          language: preferredLanguage
         })
       });
 

@@ -67,24 +67,48 @@ const ClauseCard = ({ clause }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-white/5"
           >
-            <div className="p-6 space-y-6 bg-indigo-500/5">
-              <div className="space-y-2">
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3" /> Simplified Explanation
-                </span>
-                <p className="text-slate-300 text-sm leading-relaxed font-medium">
-                  {clause.explanation}
-                </p>
+            <div className="p-8 space-y-8 bg-gradient-to-b from-indigo-500/[0.03] to-transparent relative overflow-hidden">
+               {/* Decorative background element */}
+               <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/5 blur-[60px] rounded-full pointer-events-none"></div>
+               
+               <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-0.5 w-6 bg-indigo-500/40 rounded-full"></div>
+                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                    Expert Legal Simplified
+                  </span>
+                </div>
+                <div className="bg-white/[0.03] border border-white/5 p-6 rounded-[2rem] shadow-inner">
+                  <p className="text-slate-300 text-base leading-relaxed font-medium">
+                    {clause.explanation}
+                  </p>
+                </div>
               </div>
 
               {clause.original_text && (
-                <div className="space-y-2 bg-slate-900/50 p-4 rounded-2xl border border-white/5">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Direct Excerpt</span>
-                  <p className="text-[11px] text-slate-500 font-mono leading-relaxed italic">
-                    "{clause.original_text}"
-                  </p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-0.5 w-6 bg-slate-500/20 rounded-full"></div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Verbatim Clause Excerpt</span>
+                  </div>
+                  <div className="bg-slate-900/40 p-6 rounded-[2rem] border border-white/5 relative group/quote">
+                    <div className="absolute top-4 left-4 text-white/5 text-4xl font-serif">"</div>
+                    <p className="text-[13px] text-slate-500 font-mono leading-relaxed italic pl-6">
+                      {clause.original_text}
+                    </p>
+                    <div className="absolute bottom-4 right-4 text-white/5 text-4xl font-serif">"</div>
+                  </div>
                 </div>
               )}
+
+              <div className="pt-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                  <ShieldCheck className="h-3 w-3 text-green-500/50" /> Identity Verified Analysis
+                </div>
+                <button className="text-[9px] font-black text-indigo-400/60 uppercase tracking-widest hover:text-indigo-400 transition-colors">
+                  Flag Error
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
